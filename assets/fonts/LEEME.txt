@@ -1,0 +1,10 @@
+CARPETA DE FUENTES LOCALES
+
+La versión actual no necesita archivos de fuente externos.
+La página utiliza fuentes del sistema instaladas en cada dispositivo, por lo que no se conecta a Google Fonts.
+
+Si en el futuro deseas usar Inter localmente:
+1. Descarga legalmente los archivos .woff2 desde la fuente oficial.
+2. Colócalos en esta carpeta.
+3. Decláralos con @font-face al comienzo de style.css.
+4. Cambia --fuente-sistema para usar el nombre declarado.
