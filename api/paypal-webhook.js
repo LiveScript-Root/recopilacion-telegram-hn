@@ -26,9 +26,8 @@ export default async function handler(req,res){
     if(!verify.ok||verdict.verification_status!=='SUCCESS') return json(res,400,{error:'Firma de webhook inválida.'});
 
     const db=supabaseAdmin();
-    const {error:eventError}=await db.from('nexo_paypal_events').insert({event_id:event.id,event_type:event.event_type});
-    if(eventError&&eventError.code==='23505') return json(res,200,{ok:true,duplicate:true});
-    if(eventError) throw eventError;
+    const {data:seen}=await db.from('nexo_paypal_events').select('event_id').eq('event_id',event.id).maybeSingle();
+    if(seen) return json(res,200,{ok:true,duplicate:true});
 
     if(event.event_type==='PAYMENT.CAPTURE.COMPLETED'){
       const r=event.resource||{};
@@ -52,6 +51,8 @@ export default async function handler(req,res){
       if(captureId) await db.from('nexo_submissions').update({status:'refunded',updated_at:new Date().toISOString()}).eq('paypal_capture_id',captureId);
     }
 
+    const {error:eventError}=await db.from('nexo_paypal_events').insert({event_id:event.id,event_type:event.event_type});
+    if(eventError&&eventError.code!=='23505') throw eventError;
     return json(res,200,{ok:true});
   }catch(e){
     console.error(e);
