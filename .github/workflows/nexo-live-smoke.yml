@@ -60,6 +60,12 @@ jobs:
           grep -q '/api/paypal-create-order' /tmp/pago.html
           grep -q '/api/paypal-capture-order' /tmp/pago.html
           grep -q 'disable-funding=credit,paylater' /tmp/pago.html
+          grep -q 'id="paypal-direct"' /tmp/pago.html
+          grep -q 'https://www.paypal.com/ncp/payment/WCC2TYW6EW2R2' /tmp/pago.html
+
+          curl -fsS "$BASE/admin/" -o /tmp/admin2.html
+          grep -q "localStorage.getItem('nexo_admin_key')" /tmp/admin2.html
+          grep -q "localStorage.setItem('nexo_admin_key'" /tmp/admin2.html
 
           grep -q '"ok":true' /tmp/_api_health.out
           grep -q '"price":"12.00"' /tmp/_api_public-config.out
