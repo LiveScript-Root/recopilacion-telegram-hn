@@ -62,4 +62,24 @@ page('/admin/','admin/index.html');
 app.use((req,res)=>res.status(404).sendFile(path.join(webRoot,'404.html')));
 
 const port=Number(process.env.PORT||3000);
-app.listen(port,'0.0.0.0',()=>console.log('NEXO listening on '+port));
+app.listen(port,'0.0.0.0',()=>{
+  console.log('NEXO listening on '+port);
+  setTimeout(async()=>{
+    try{
+      const key=process.env.ADMIN_ACCESS_TOKEN||'';
+      if(!key) throw new Error('ADMIN_ACCESS_TOKEN ausente');
+      const r=await fetch('http://127.0.0.1:'+port+'/api/admin-submissions',{
+        headers:{'X-Admin-Key':key,'Accept':'application/json'}
+      });
+      if(r.status!==200){
+        const body=await r.text();
+        throw new Error('HTTP '+r.status+' '+body.slice(0,240));
+      }
+      const data=await r.json();
+      if(!Array.isArray(data.submissions)) throw new Error('Respuesta administrativa inválida');
+      console.log('NEXO admin self-check: OK ('+data.submissions.length+' solicitudes)');
+    }catch(error){
+      console.error('NEXO admin self-check: FAILED',error);
+    }
+  },1500);
+});
