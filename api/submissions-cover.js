@@ -1,4 +1,4 @@
-import { json, method, clean, supabaseAdmin, BUCKET, loadCoverBuffer, archiveSubmissionToGithub, sendSubmissionReceivedAdmin } from './_lib.js';
+import { json, method, clean, supabaseAdmin, BUCKET, loadCoverBuffer, archiveSubmissionToGithub, sendSubmissionReceivedAdmin, safeRecordSubmissionEvent } from './_lib.js';
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   try{
@@ -17,6 +17,7 @@ export default async function handler(req,res){
       .select('*')
       .single();
     if(updateError) throw updateError;
+    await safeRecordSubmissionEvent(db,requestId,'cover_uploaded','Portada guardada');
 
     try{
       const cover=await loadCoverBuffer(db,updated);
@@ -42,6 +43,7 @@ export default async function handler(req,res){
         submission_email_error:null,
         updated_at:new Date().toISOString()
       }).eq('request_id',requestId);
+      await safeRecordSubmissionEvent(db,requestId,'submission_email_sent','Aviso inicial enviado a administración');
     }catch(emailError){
       console.error('Submission email:',emailError);
       await db.from('nexo_submissions').update({
