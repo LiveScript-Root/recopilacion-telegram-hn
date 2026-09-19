@@ -160,6 +160,107 @@ export async function sendEmails(record, coverAttachment) {
   return { clientId: client.data?.id, adminId: admin.data?.id };
 }
 
+
+async function githubArchiveRepo() {
+  const token = process.env.GITHUB_ARCHIVE_TOKEN || '';
+  const repo = process.env.GITHUB_ARCHIVE_REPO || '';
+  if (!token || !repo) return null;
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) throw new Error('GITHUB_ARCHIVE_REPO inválido.');
+
+  const headers = {
+    Authorization: 'Bearer ' + token,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'NEXO-Production'
+  };
+
+  const infoResp = await fetch('https://api.github.com/repos/' + repo, { headers });
+  const info = await infoResp.json().catch(() => ({}));
+  if (!infoResp.ok) throw new Error('No se pudo acceder al repositorio privado de archivo.');
+  if (info.private !== true) throw new Error('El repositorio de archivo de GitHub debe ser PRIVADO.');
+  return { repo, headers };
+}
+
+async function githubPutPrivateFile(path, buffer, message) {
+  const cfg = await githubArchiveRepo();
+  if (!cfg) return { skipped: true };
+
+  const url = 'https://api.github.com/repos/' + cfg.repo + '/contents/' + path.split('/').map(encodeURIComponent).join('/');
+  let sha = null;
+  const currentResp = await fetch(url, { headers: cfg.headers });
+  if (currentResp.ok) {
+    const current = await currentResp.json();
+    sha = current.sha || null;
+  } else if (currentResp.status !== 404) {
+    throw new Error('No se pudo revisar el archivo existente en GitHub.');
+  }
+
+  const body = {
+    message,
+    content: Buffer.from(buffer).toString('base64')
+  };
+  if (sha) body.sha = sha;
+
+  const putResp = await fetch(url, {
+    method: 'PUT',
+    headers: { ...cfg.headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const result = await putResp.json().catch(() => ({}));
+  if (!putResp.ok) throw new Error(result?.message || 'No se pudo guardar la copia privada en GitHub.');
+  return { skipped: false, url: result?.content?.html_url || null };
+}
+
+export async function archiveSubmissionToGithub(record, coverBuffer = null, stage = 'submitted') {
+  if (!process.env.GITHUB_ARCHIVE_TOKEN || !process.env.GITHUB_ARCHIVE_REPO) return { skipped: true };
+  const rid = String(record.request_id || '').replace(/[^A-Z0-9-]/g, '');
+  if (!/^NEXO-[A-F0-9]{12}$/.test(rid)) throw new Error('ID de solicitud inválido para archivo.');
+
+  const snapshot = {
+    request_id: record.request_id,
+    stage,
+    status: record.status,
+    profile_name: record.profile_name,
+    telegram_link: record.telegram_link,
+    applicant_email: record.applicant_email,
+    contact_telegram: record.contact_telegram,
+    relation: record.relation,
+    note: record.note || '',
+    cover_name: record.cover_name,
+    cover_mime: record.cover_mime,
+    cover_size: record.cover_size,
+    authorized: Boolean(record.authorized),
+    adult: Boolean(record.adult),
+    paypal_order_id: record.paypal_order_id || null,
+    paypal_capture_id: record.paypal_capture_id || null,
+    paypal_payer_email: record.paypal_payer_email || null,
+    payment_amount: record.payment_amount || null,
+    payment_currency: record.payment_currency || null,
+    paid_at: record.paid_at || null,
+    created_at: record.created_at,
+    updated_at: record.updated_at,
+    archived_at: new Date().toISOString()
+  };
+
+  const json = Buffer.from(JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
+  await githubPutPrivateFile(
+    'solicitudes/' + rid + '/solicitud.json',
+    json,
+    'NEXO: archivar ' + rid + ' (' + stage + ')'
+  );
+
+  if (coverBuffer) {
+    const filename = safeFilename(record.cover_name || 'portada', record.cover_mime || 'image/jpeg');
+    await githubPutPrivateFile(
+      'solicitudes/' + rid + '/' + filename,
+      coverBuffer,
+      'NEXO: archivar portada ' + rid
+    );
+  }
+
+  return { skipped: false };
+}
+
 export async function loadCoverBuffer(db, record) {
   if (!record.cover_path) return null;
   const { data, error } = await db.storage.from(BUCKET).download(record.cover_path);
@@ -201,6 +302,22 @@ export async function finalizePaidSubmission(requestIdValue, payment) {
 
   try {
     const cover = await loadCoverBuffer(db, locked);
+
+    try {
+      await archiveSubmissionToGithub(locked, cover, 'paid');
+      await db.from('nexo_submissions').update({
+        github_archive_last_at: new Date().toISOString(),
+        github_archive_error: null,
+        updated_at: new Date().toISOString()
+      }).eq('request_id', requestIdValue);
+    } catch (archiveError) {
+      console.error('GitHub archive:', archiveError);
+      await db.from('nexo_submissions').update({
+        github_archive_error: String(archiveError.message || archiveError).slice(0, 1000),
+        updated_at: new Date().toISOString()
+      }).eq('request_id', requestIdValue);
+    }
+
     await sendEmails(locked, cover);
     const { data: emailed, error: emailStateError } = await db.from('nexo_submissions').update({
       status: 'email_sent',
