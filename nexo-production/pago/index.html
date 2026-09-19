@@ -13,18 +13,83 @@
 </nav></div></header>
 <main class="page"><div class="wrap"><a class="crumb" href="/anunciar/">← Volver a tu perfil</a><div class="eyebrow">Publicación en NEXO</div><h1>Revisa y continúa<br>con tu pago.</h1><p class="lead">El pago se procesa de forma segura mediante PayPal.</p>
 <div class="payment-layout"><section class="panel"><div class="steps"><div class="step"><b>1</b>Tu perfil</div><div class="step active"><b>2</b>Pago y confirmación</div></div><div id="summary" class="summary"></div></section>
-<aside class="paybox"><h2 style="margin-top:0">Resumen del pedido</h2><div class="row"><strong>Total</strong><strong>$12.00 USD</strong></div><p style="color:#5e6877;line-height:1.5">Publicación de perfil en NEXO</p><a id="pay" class="paypal" href="https://www.paypal.com/ncp/payment/WCC2TYW6EW2R2">PayPal</a><p style="font-size:12px;color:#697586;text-align:center;margin-bottom:0">Al continuar, serás dirigido a PayPal para completar la operación.</p></aside></div></div></main>
+<aside class="paybox"><h2 style="margin-top:0">Resumen del pedido</h2><div class="row"><strong>Total</strong><strong>$12.00 USD</strong></div><p style="color:#5e6877;line-height:1.5">Publicación de perfil en NEXO</p><div id="paypal-buttons" style="margin-top:18px"></div><div id="payStatus" style="font-size:12px;color:#697586;text-align:center;margin-top:10px">El pago se procesa de forma segura mediante PayPal.</div></aside></div></div></main>
 <footer class="footer"><div class="wrap">
 <div>© NEXO · Directorio de perfiles y canales</div>
 <div><a href="/terminos/">Términos</a> · <a href="/privacidad/">Privacidad</a> · <a href="/contacto/">Contacto</a></div>
 </div></footer>
 <script>
-let d={};try{d=JSON.parse(sessionStorage.getItem('nexo_publish_draft')||'{}')}catch{}
-if(!d.profileName){document.getElementById('summary').innerHTML='<div class="alert show">No encontramos una solicitud activa. Vuelve al formulario para continuar.</div><a class="btn primary" href="/anunciar/">Ir al formulario</a>'}
-else{document.getElementById('summary').innerHTML=
-'<div class="row"><span>Solicitud</span><strong>'+d.requestId+'</strong></div>'+
-'<div class="row"><span>Perfil</span><strong>'+d.profileName+'</strong></div>'+
-'<div class="row"><span>Telegram</span><strong>'+d.telegramLink+'</strong></div>'+
-'<div class="row"><span>Correo</span><strong>'+d.email+'</strong></div>'+
-'<div class="row"><span>Servicio</span><strong>Publicación en NEXO</strong></div>'}
+(async()=>{
+  const status=document.getElementById('payStatus');
+  const summary=document.getElementById('summary');
+  let d={};
+  try{d=JSON.parse(sessionStorage.getItem('nexo_publish_draft')||'{}')}catch{}
+  const rid=d.requestId||sessionStorage.getItem('nexo_request_id')||'';
+
+  if(!d.profileName||!rid){
+    summary.innerHTML='<div class="alert show">No encontramos una solicitud activa. Vuelve al formulario para continuar.</div><a class="btn primary" href="/anunciar/">Ir al formulario</a>';
+    document.getElementById('paypal-buttons').hidden=true;
+    status.textContent='Completa primero tu solicitud.';
+    return;
+  }
+
+  summary.innerHTML=
+    '<div class="row"><span>Solicitud</span><strong>'+rid+'</strong></div>'+
+    '<div class="row"><span>Perfil</span><strong>'+d.profileName+'</strong></div>'+
+    '<div class="row"><span>Telegram</span><strong>'+d.telegramLink+'</strong></div>'+
+    '<div class="row"><span>Correo</span><strong>'+d.email+'</strong></div>'+
+    '<div class="row"><span>Servicio</span><strong>Publicación en NEXO</strong></div>';
+
+  try{
+    const cfgResp=await fetch('/api/public-config',{cache:'no-store'});
+    const cfg=await cfgResp.json();
+    if(!cfgResp.ok) throw new Error(cfg.error||'No se pudo cargar PayPal.');
+
+    const script=document.createElement('script');
+    script.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(cfg.paypalClientId)+'&currency=USD&components=buttons&disable-funding=credit,paylater';
+    script.async=true;
+    await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=()=>reject(new Error('No se pudo cargar PayPal.'));document.head.appendChild(script)});
+
+    await window.paypal.Buttons({
+      fundingSource:window.paypal.FUNDING.PAYPAL,
+      style:{layout:'vertical',shape:'pill',height:48,label:'paypal'},
+      createOrder:async()=>{
+        status.textContent='Preparando el pago…';
+        const r=await fetch('/api/paypal-create-order',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({requestId:rid})
+        });
+        const data=await r.json().catch(()=>({}));
+        if(!r.ok||!data.orderId) throw new Error(data.error||'No se pudo iniciar el pago.');
+        status.textContent='Completa el pago en PayPal.';
+        return data.orderId;
+      },
+      onApprove:async data=>{
+        status.textContent='Confirmando tu pago…';
+        const r=await fetch('/api/paypal-capture-order',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({requestId:rid,orderId:data.orderID})
+        });
+        const result=await r.json().catch(()=>({}));
+        if(!r.ok){
+          status.textContent=result.error||'Tu pago requiere revisión. No vuelvas a pagar.';
+          status.style.color='#8b1e2d';
+          throw new Error(result.error||'No se pudo confirmar automáticamente.');
+        }
+        location.href='/solicitud-recibida/?requestId='+encodeURIComponent(rid);
+      },
+      onCancel:()=>{status.textContent='El pago fue cancelado. Puedes intentarlo nuevamente cuando quieras.'},
+      onError:error=>{
+        console.error(error);
+        if(!status.textContent.includes('No vuelvas a pagar')) status.textContent='No se pudo completar PayPal. Inténtalo nuevamente.';
+      }
+    }).render('#paypal-buttons');
+  }catch(error){
+    console.error(error);
+    status.textContent=error.message||'No se pudo cargar el sistema de pago.';
+    status.style.color='#8b1e2d';
+  }
+})();
 </script><script>(function(){function p(){document.querySelectorAll('img').forEach(function(i){i.draggable=false;i.setAttribute('draggable','false')})}p();document.addEventListener('dragstart',function(e){if(e.target&&e.target.tagName==='IMG')e.preventDefault()},true);document.addEventListener('contextmenu',function(e){if(e.target&&e.target.tagName==='IMG')e.preventDefault()},true);document.addEventListener('gesturestart',function(e){e.preventDefault()},{passive:false});document.addEventListener('gesturechange',function(e){e.preventDefault()},{passive:false});})();</script></body></html>
