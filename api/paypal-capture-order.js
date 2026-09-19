@@ -35,17 +35,26 @@ export default async function handler(req,res){
       return json(res,409,{error:'Los datos del pago no coinciden con la solicitud.'});
     }
 
-    const record=await finalizePaidSubmission(rid,{
-      orderId,
-      captureId:cap?.id||'',
-      payerEmail:order.payer?.email_address||'',
-      amount,
-      currency,
-      paidAt:cap?.create_time||new Date().toISOString()
-    });
-    return json(res,200,{ok:true,requestId:rid,status:record?.status||'paid',transactionId:cap?.id||''});
+    try{
+      const record=await finalizePaidSubmission(rid,{
+        orderId,
+        captureId:cap?.id||'',
+        payerEmail:order.payer?.email_address||'',
+        amount,
+        currency,
+        paidAt:cap?.create_time||new Date().toISOString()
+      });
+      return json(res,200,{ok:true,requestId:rid,status:record?.status||'paid',transactionId:cap?.id||''});
+    }catch(finalizeError){
+      console.error(finalizeError);
+      const {data:current}=await db.from('nexo_submissions').select('status,paypal_capture_id').eq('request_id',rid).single();
+      if(current&&['payment_processing','paid','email_error','email_sent'].includes(current.status)){
+        return json(res,200,{ok:true,requestId:rid,status:current.status,transactionId:current.paypal_capture_id||cap?.id||'',emailPending:current.status!=='email_sent'});
+      }
+      throw finalizeError;
+    }
   }catch(e){
     console.error(e);
-    return json(res,500,{error:'El pago fue recibido, pero no se pudo completar la confirmación automática. No vuelvas a pagar; soporte puede revisar la transacción.'});
+    return json(res,500,{error:'No se pudo confirmar el pago automáticamente. Si PayPal muestra el cargo como completado, no vuelvas a pagar y contacta a soporte.'});
   }
 }
