@@ -58,11 +58,25 @@ Abrir:
 
 La clave nunca se guarda en el repositorio ni se envía en la URL. Solo se conserva en sessionStorage durante la sesión del navegador.
 
-## 5. Vercel
+## 5. Archivo privado en GitHub
+Si se desea una copia navegable por carpetas de cada solicitud:
+1. Crear un repositorio PRIVADO, por ejemplo `LiveScript-Root/nexo-solicitudes-privadas`.
+2. Crear un token de GitHub de alcance limitado con permiso de escritura de Contents solo para ese repositorio.
+3. Configurar:
+   - GITHUB_ARCHIVE_REPO
+   - GITHUB_ARCHIVE_TOKEN
+4. NEXO guardará automáticamente:
+   - `solicitudes/NEXO-XXXXXXXXXXXX/solicitud.json`
+   - la portada enviada por el cliente.
+5. El JSON se actualiza nuevamente cuando el pago queda confirmado.
+
+Nunca usar el repositorio público del sitio para correos, fotos o datos de clientes.
+
+## 6. Vercel
 Importar este repositorio y desplegar desde la raíz.
 El archivo `vercel.json` sirve el frontend de `nexo-production/` y expone `/api/*`.
 
-## 6. Dominio
+## 7. Dominio
 Cuando todo funcione con el dominio de Vercel:
 1. conectar `nexocanales.com`;
 2. actualizar el webhook de PayPal si estaba usando el dominio temporal;
