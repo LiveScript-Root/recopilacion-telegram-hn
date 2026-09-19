@@ -64,13 +64,94 @@ export function supabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false }, global: { headers: { 'x-nexo-backend-secret': backendSecret } } });
 }
 
+function safeEqualStrings(a,b){
+  const aa=Buffer.from(String(a||''));
+  const bb=Buffer.from(String(b||''));
+  return aa.length===bb.length && crypto.timingSafeEqual(aa,bb);
+}
+
+export function adminKeyMatches(value){
+  const expected=process.env.ADMIN_ACCESS_TOKEN||'';
+  const got=clean(value,300);
+  return Boolean(expected&&got&&safeEqualStrings(got,expected));
+}
+
+function parseCookies(req){
+  const raw=String(req.headers?.cookie||'');
+  const out={};
+  for(const part of raw.split(';')){
+    const i=part.indexOf('=');
+    if(i<1) continue;
+    const k=part.slice(0,i).trim();
+    const v=part.slice(i+1).trim();
+    if(k) out[k]=decodeURIComponent(v);
+  }
+  return out;
+}
+
+function sessionSecret(){
+  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_ACCESS_TOKEN || '';
+}
+
+function signSessionPayload(payload){
+  const secret=sessionSecret();
+  if(!secret) return '';
+  return crypto.createHmac('sha256',secret).update(payload).digest('base64url');
+}
+
+export function createAdminSession(res, days=30){
+  const exp=Date.now()+Math.max(1,Math.min(days,30))*24*60*60*1000;
+  const payload=Buffer.from(JSON.stringify({v:1,exp,nonce:crypto.randomBytes(12).toString('hex')})).toString('base64url');
+  const sig=signSessionPayload(payload);
+  if(!sig) throw new Error('La sesión administrativa no está configurada.');
+  const maxAge=Math.floor((exp-Date.now())/1000);
+  res.setHeader('Set-Cookie',`nexo_admin_session=${payload}.${sig}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`);
+  return exp;
+}
+
+export function clearAdminSession(res){
+  res.setHeader('Set-Cookie','nexo_admin_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');
+}
+
+export function adminSessionValid(req){
+  try{
+    const token=parseCookies(req).nexo_admin_session||'';
+    const [payload,sig]=token.split('.');
+    if(!payload||!sig) return false;
+    const expected=signSessionPayload(payload);
+    if(!expected||!safeEqualStrings(sig,expected)) return false;
+    const data=JSON.parse(Buffer.from(payload,'base64url').toString('utf8'));
+    return data?.v===1 && Number(data.exp)>Date.now();
+  }catch{return false}
+}
+
 export function adminAuthorized(req) {
-  const expected = process.env.ADMIN_ACCESS_TOKEN || '';
-  const got = clean(req.headers['x-admin-key'], 300);
-  if (!expected || !got) return false;
-  const a = Buffer.from(got);
-  const b = Buffer.from(expected);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  if(adminSessionValid(req)) return true;
+  return adminKeyMatches(req.headers?.['x-admin-key']);
+}
+
+export function sameOrigin(req){
+  const origin=String(req.headers?.origin||'');
+  if(!origin) return true;
+  const proto=String(req.headers?.['x-forwarded-proto']||'https').split(',')[0].trim();
+  const host=String(req.headers?.['x-forwarded-host']||req.headers?.host||'').split(',')[0].trim();
+  return origin===proto+'://'+host;
+}
+
+export async function recordSubmissionEvent(db,requestId,eventType,label,details={}){
+  if(!db||!requestId) return;
+  const {error}=await db.from('nexo_submission_events').insert({
+    request_id:requestId,
+    event_type:String(eventType||'event').slice(0,80),
+    label:String(label||eventType||'Evento').slice(0,200),
+    details:details&&typeof details==='object'?details:{}
+  });
+  if(error) throw error;
+}
+
+export async function safeRecordSubmissionEvent(db,requestId,eventType,label,details={}){
+  try{await recordSubmissionEvent(db,requestId,eventType,label,details)}
+  catch(error){console.error('NEXO event log:',error)}
 }
 
 export async function paypalAccessToken() {
