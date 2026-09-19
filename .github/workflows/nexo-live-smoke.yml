@@ -49,6 +49,8 @@ jobs:
           grep -q 'id="login"' /tmp/admin.html
           grep -q '/api/admin-submissions' /tmp/admin.html
           grep -q 'Reenviar aviso inicial' /tmp/admin.html
+          curl -fsSI "$BASE/admin/" | grep -qi '^cache-control: .*no-store'
+          curl -fsSI "$BASE/anunciar/" | grep -qi '^cache-control: .*no-store'
           if grep -Fq '\\n' /tmp/admin.html; then
             echo "Admin HTML still contains literal backslash-n sequences"
             exit 1
