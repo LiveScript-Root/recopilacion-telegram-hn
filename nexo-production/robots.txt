@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /pago/
+Disallow: /solicitud-recibida/
+Sitemap: https://nexocanales.com/sitemap.xml
