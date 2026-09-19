@@ -86,16 +86,29 @@ app.listen(port,'0.0.0.0',()=>{
     try{
       const key=process.env.ADMIN_ACCESS_TOKEN||'';
       if(!key) throw new Error('ADMIN_ACCESS_TOKEN ausente');
+      const loginResp=await fetch('http://127.0.0.1:'+port+'/api/admin-login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({key})
+      });
+      if(loginResp.status!==200){
+        const body=await loginResp.text();
+        throw new Error('Login HTTP '+loginResp.status+' '+body.slice(0,240));
+      }
+      const setCookie=loginResp.headers.get('set-cookie')||'';
+      const cookie=setCookie.split(';')[0];
+      if(!cookie.startsWith('nexo_admin_session=')) throw new Error('No se emitió cookie administrativa segura.');
+
       const r=await fetch('http://127.0.0.1:'+port+'/api/admin-submissions',{
-        headers:{'X-Admin-Key':key,'Accept':'application/json'}
+        headers:{Cookie:cookie,'Accept':'application/json'}
       });
       if(r.status!==200){
         const body=await r.text();
-        throw new Error('HTTP '+r.status+' '+body.slice(0,240));
+        throw new Error('Session HTTP '+r.status+' '+body.slice(0,240));
       }
       const data=await r.json();
       if(!Array.isArray(data.submissions)) throw new Error('Respuesta administrativa inválida');
-      console.log('NEXO admin self-check: OK ('+data.submissions.length+' solicitudes)');
+      console.log('NEXO admin self-check: OK ('+data.submissions.length+' solicitudes, secure-session=OK)');
 
       if(process.env.NEXO_DEEP_SELF_TEST==='1'){
         let rid='',coverPath='';
