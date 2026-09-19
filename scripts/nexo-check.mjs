@@ -43,6 +43,20 @@ if (received.includes("st==='COMPLETED'")) throw new Error('La página de retorn
 
 const admin=fs.readFileSync('nexo-production/admin/index.html','utf8');
 if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend') || !admin.includes('/api/admin-resend-submission')) throw new Error('Panel admin incompleto.');
+if (admin.includes('\\\\n')) throw new Error('Panel admin contiene secuencias \\n literales que rompen JavaScript.');
+
+const preview=fs.readFileSync('nexo-production/anunciar/index.html','utf8');
+for (const term of ['Vista previa','previewImage','previewName','previewPlaceholder']) {
+  if (!preview.includes(term)) throw new Error('Vista previa incompleta: '+term);
+}
+
+for (const [name,html] of [['admin',admin],['anunciar',preview],['pago',payment],['solicitud-recibida',received]]) {
+  const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]).filter(Boolean);
+  for (const source of scripts) {
+    try { new Function(source); }
+    catch (error) { throw new Error('JavaScript inválido en '+name+': '+error.message); }
+  }
+}
 
 const schema=fs.readFileSync('supabase/schema.sql','utf8');
 for (const term of ['nexo_submissions','nexo_paypal_events','cover_uploaded','nexo-submissions']) {
