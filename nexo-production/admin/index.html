@@ -3,134 +3,275 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>Administración — NEXO</title>
 <style>
-:root{color-scheme:dark;--bg:#090d14;--panel:#0f1623;--panel2:#121d30;--line:#25324a;--text:#f7f9ff;--muted:#9dacbf;--blue:#3972f6;--ok:#37d39a;--warn:#ffbf5b;--bad:#ef5965}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{background:radial-gradient(circle at 50% -20%,#13264a 0,#090d14 38%,#070a10 100%)}
-a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}.top{border-bottom:1px solid var(--line);background:#080c13ee;position:sticky;top:0;z-index:20}.nav{height:68px;display:flex;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}.mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#21d8ff,#2460ff);display:grid;place-items:center;color:#06101c;font-weight:1000}.nav span:last-child{color:var(--muted);font-size:13px}.page{padding:36px 0 80px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#7da5ff;font-weight:800}.title{font-size:clamp(32px,5vw,52px);margin:10px 0 8px;letter-spacing:-.04em}.sub{color:var(--muted);max-width:720px}.panel{background:linear-gradient(180deg,#101722,#0c121c);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:24px}.login{max-width:520px}.row{display:flex;gap:10px}.field{flex:1;min-height:46px;border:1px solid #3a4b68;background:#0b1320;color:#fff;border-radius:10px;padding:0 13px;outline:none}.btn{border:1px solid #35507f;background:#16233a;color:#fff;border-radius:10px;padding:0 17px;min-height:46px;font-weight:800;cursor:pointer}.btn.primary{background:linear-gradient(135deg,#447cff,#3169e9)}.btn.small{min-height:36px;padding:0 12px;font-size:12px}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:22px 0 14px}.toolbar input{min-width:260px}.count{color:var(--muted);font-size:13px}.cards{display:grid;gap:14px}.card{border:1px solid var(--line);background:#0e1521;border-radius:14px;overflow:hidden}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}.id{font-weight:900;letter-spacing:.04em}.badge{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.06em;border:1px solid #4b5a75;background:#182133}.badge.ok{border-color:#28765e;background:#0d2d25;color:#77e7c0}.badge.warn{border-color:#7b5e29;background:#2c2211;color:#ffd38c}.badge.bad{border-color:#793844;background:#341a20;color:#ffb9c0}.card-body{display:grid;grid-template-columns:170px 1fr;gap:20px;padding:18px}.cover{width:170px;height:210px;border-radius:12px;overflow:hidden;background:#151c28;border:1px solid var(--line)}.cover img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}.details{display:grid;grid-template-columns:160px minmax(0,1fr);align-content:start}.details div{padding:9px 0;border-bottom:1px solid #1d2637}.label{color:#8fa0b9;font-size:12px}.value{overflow-wrap:anywhere}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.notice{padding:12px 14px;border-radius:10px;border:1px solid #60414a;background:#2b171d;color:#ffd0d5;margin-top:14px}.empty{padding:32px;text-align:center;color:var(--muted)}[hidden]{display:none!important}
-@media(max-width:720px){.card-body{grid-template-columns:1fr}.cover{width:100%;height:auto;aspect-ratio:4/5}.details{grid-template-columns:1fr}.details .label{padding-bottom:0}.row{flex-direction:column}.toolbar{align-items:stretch}.toolbar input{min-width:0;width:100%}}
+:root{color-scheme:dark;--bg:#080c13;--panel:#0f1724;--panel2:#121d30;--line:#26344d;--text:#f7f9ff;--muted:#98a8be;--blue:#3972f6;--ok:#37d39a;--warn:#ffbf5b;--bad:#ef5965;--violet:#a78bfa}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{background:radial-gradient(circle at 50% -20%,#13264a 0,#090d14 38%,#070a10 100%)}a{color:inherit}button,input,select,textarea{font:inherit}.wrap{width:min(1220px,calc(100% - 28px));margin:auto}.top{border-bottom:1px solid var(--line);background:#080c13ee;position:sticky;top:0;z-index:30;backdrop-filter:blur(12px)}.nav{min-height:68px;display:flex;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}.mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#21d8ff,#2460ff);display:grid;place-items:center;color:#06101c;font-weight:1000}.nav .spacer{flex:1}.nav-note{color:var(--muted);font-size:12px}.page{padding:32px 0 80px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#7da5ff;font-weight:800}.title{font-size:clamp(30px,5vw,48px);margin:8px 0 8px;letter-spacing:-.04em}.sub{color:var(--muted);max-width:760px}.panel{background:linear-gradient(180deg,#101722,#0c121c);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:20px}.login{max-width:560px}.row{display:flex;gap:10px}.field,.select,.textarea{border:1px solid #3a4b68;background:#0b1320;color:#fff;border-radius:10px;outline:none}.field,.select{min-height:44px;padding:0 12px}.textarea{width:100%;min-height:88px;padding:12px;resize:vertical}.btn{border:1px solid #35507f;background:#16233a;color:#fff;border-radius:10px;padding:0 14px;min-height:42px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.55;cursor:not-allowed}.btn.primary{background:linear-gradient(135deg,#447cff,#3169e9)}.btn.good{border-color:#28765e;background:#0d2d25}.btn.bad{border-color:#793844;background:#341a20}.btn.small{min-height:34px;padding:0 11px;font-size:12px}.btn.ghost{background:#0c1320}.notice{padding:12px 14px;border-radius:10px;border:1px solid #60414a;background:#2b171d;color:#ffd0d5;margin-top:14px}.success{border-color:#27644f;background:#0d2921;color:#9af1cf}.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:22px}.stat{background:#0e1623;border:1px solid var(--line);border-radius:14px;padding:15px}.stat strong{display:block;font-size:24px;margin-top:3px}.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}.toolbar{display:grid;grid-template-columns:minmax(240px,1fr) repeat(3,minmax(150px,auto)) auto;gap:9px;align-items:center;margin:18px 0 14px}.toolbar .field{width:100%}.count{color:var(--muted);font-size:12px}.toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.cards{display:grid;gap:14px}.card{border:1px solid var(--line);background:#0e1521;border-radius:14px;overflow:hidden}.card.new{box-shadow:0 0 0 1px #3972f655 inset}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;border-bottom:1px solid var(--line)}.id{font-weight:900;letter-spacing:.04em}.meta-mini{color:var(--muted);font-size:11px;margin-top:4px}.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.badge{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.06em;border:1px solid #4b5a75;background:#182133}.badge.ok{border-color:#28765e;background:#0d2d25;color:#77e7c0}.badge.warn{border-color:#7b5e29;background:#2c2211;color:#ffd38c}.badge.bad{border-color:#793844;background:#341a20;color:#ffb9c0}.badge.info{border-color:#365f9f;background:#112343;color:#a8c6ff}.badge.violet{border-color:#62509d;background:#21183b;color:#d7caff}.card-body{display:grid;grid-template-columns:170px 1fr;gap:18px;padding:17px}.cover{width:170px;height:215px;border-radius:12px;overflow:hidden;background:#151c28;border:1px solid var(--line);cursor:zoom-in}.cover img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}.details{display:grid;grid-template-columns:165px minmax(0,1fr);align-content:start}.details>div{padding:8px 0;border-bottom:1px solid #1d2637}.label{color:#8fa0b9;font-size:11px}.value{overflow-wrap:anywhere}.inline{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.timeline{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}.event{display:grid;grid-template-columns:145px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid #1d2637}.event time{color:var(--muted);font-size:11px}.event strong{font-size:12px}.empty{padding:30px;text-align:center;color:var(--muted)}.modal{position:fixed;inset:0;z-index:100;background:#03060bdd;display:grid;place-items:center;padding:20px}.modal-card{max-width:min(900px,96vw);max-height:92vh;position:relative}.modal img{max-width:100%;max-height:86vh;border-radius:14px;border:1px solid var(--line)}.modal-close{position:absolute;right:-8px;top:-8px;border:0;border-radius:999px;width:38px;height:38px;background:#111b2b;color:#fff;font-size:20px;cursor:pointer}.security-panel{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.muted{color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(3,1fr)}.toolbar{grid-template-columns:1fr 1fr 1fr}.toolbar .field{grid-column:1/-1}}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.card-body{grid-template-columns:1fr}.cover{width:100%;height:auto;aspect-ratio:4/5}.details{grid-template-columns:1fr}.details .label{padding-bottom:0}.row{flex-direction:column}.toolbar{grid-template-columns:1fr}.toolbar .field{grid-column:auto}.event{grid-template-columns:1fr}.nav-note{display:none}}
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>NEXO</span></a><span>Administración privada</span></div></header>
+<header class="top"><div class="wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>NEXO</span></a><span class="nav-note">Administración privada</span><span class="spacer"></span><button id="topPasskey" class="btn small ghost" hidden>Configurar Passkey</button><button id="topLogout" class="btn small ghost" hidden>Cerrar sesión</button></div></header>
 <main class="page"><div class="wrap">
-<div class="eyebrow">Panel privado</div><h1 class="title">Solicitudes de publicación</h1><p class="sub">Consulta los datos enviados por cada cliente, la portada, el estado del pago y la transacción de PayPal.</p>
+<div class="eyebrow">Panel privado</div><h1 class="title">Solicitudes de publicación</h1><p class="sub">Controla solicitudes, pagos, revisión, correos, historial y publicación desde un solo lugar.</p>
 
 <section id="loginBox" class="panel login">
 <h2 style="margin-top:0">Acceso administrativo</h2>
-<p style="color:var(--muted)">Introduce tu clave privada de administración. Este dispositivo recordará el acceso después de entrar correctamente.</p>
+<p class="muted">Inicia sesión una vez. NEXO mantendrá este dispositivo conectado de forma segura hasta 30 días.</p>
 <div class="row"><input id="key" class="field" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="login" class="btn primary">Entrar</button></div>
+<div class="security-panel"><button id="passkeyLogin" class="btn small ghost">Entrar con Passkey / Windows Hello / Face ID</button></div>
 <div id="loginError" class="notice" hidden></div>
 </section>
 
 <section id="dashboard" hidden>
-<div class="toolbar"><div><button id="refresh" class="btn small">Actualizar</button> <button id="logout" class="btn small">Cerrar sesión</button></div><input id="search" class="field" type="search" placeholder="Buscar nombre, correo, Telegram o ID"><div id="count" class="count"></div></div>
+<div class="stats">
+<div class="stat"><span>Total</span><strong id="sTotal">0</strong></div>
+<div class="stat"><span>Nuevas</span><strong id="sNew">0</strong></div>
+<div class="stat"><span>Pendientes pago</span><strong id="sPending">0</strong></div>
+<div class="stat"><span>Pagadas</span><strong id="sPaid">0</strong></div>
+<div class="stat"><span>En revisión</span><strong id="sReview">0</strong></div>
+<div class="stat"><span>Publicadas</span><strong id="sPublished">0</strong></div>
+</div>
+
+<div class="toolbar">
+<input id="search" class="field" type="search" placeholder="Buscar nombre, correo, Telegram, ID o PayPal">
+<select id="paymentFilter" class="select"><option value="all">Todos los pagos</option><option value="pending">Pendientes</option><option value="paid">Pagados</option><option value="refunded">Reembolsados</option></select>
+<select id="reviewFilter" class="select"><option value="all">Todas las revisiones</option><option value="new">Nuevas</option><option value="reviewing">En revisión</option><option value="published">Publicadas</option><option value="rejected">Rechazadas</option></select>
+<select id="dateFilter" class="select"><option value="all">Todas las fechas</option><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select>
+<div id="count" class="count"></div>
+</div>
+<div class="toolbar-actions"><button id="refresh" class="btn small">Actualizar</button><button id="exportCsv" class="btn small">Exportar CSV</button><button id="configurePasskey" class="btn small">Configurar Passkey</button></div>
 <div id="cards" class="cards"></div>
 </section>
 </div></main>
+
+<div id="imageModal" class="modal" hidden><div class="modal-card"><button id="modalClose" class="modal-close">×</button><img id="modalImage" alt="Portada ampliada"></div></div>
+
 <script>
 (()=> {
   const $=id=>document.getElementById(id);
-  const state={key:localStorage.getItem('nexo_admin_key')||'',rows:[]};
+  const state={rows:[]};
+  const paidStates=new Set(['paid','email_sent','email_error','payment_processing']);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=d=>d?new Date(d).toLocaleString('es-US',{dateStyle:'medium',timeStyle:'short'}):'—';
   const money=(v,c)=>v?Number(v).toFixed(2)+' '+(c||'USD'):'—';
-  const statusLabel=s=>({
-    pending_payment:'PENDIENTE DE PAGO',
-    payment_processing:'PROCESANDO',
-    paid:'PAGADO',
-    email_sent:'PAGADO · CORREOS ENVIADOS',
-    email_error:'PAGADO · ERROR DE CORREO',
-    refunded:'REEMBOLSADO',
-    rejected:'RECHAZADO'
-  }[s]||String(s||'DESCONOCIDO').toUpperCase());
-  const statusClass=s=>['email_sent','paid'].includes(s)?'ok':['email_error','payment_processing','pending_payment'].includes(s)?'warn':['refunded','rejected'].includes(s)?'bad':'';
-  function render(){
+  const paymentLabel=s=>({pending_payment:'PENDIENTE DE PAGO',payment_processing:'PROCESANDO',paid:'PAGADO',email_sent:'PAGADO · CORREOS ENVIADOS',email_error:'PAGADO · ERROR DE CORREO',refunded:'REEMBOLSADO',rejected:'RECHAZADO'}[s]||String(s||'DESCONOCIDO').toUpperCase());
+  const paymentClass=s=>['email_sent','paid'].includes(s)?'ok':['email_error','payment_processing','pending_payment'].includes(s)?'warn':['refunded','rejected'].includes(s)?'bad':'';
+  const reviewLabel=s=>({new:'NUEVA',reviewing:'EN REVISIÓN',published:'PUBLICADA',rejected:'RECHAZADA'}[s||'new']||String(s||'new').toUpperCase());
+  const reviewClass=s=>s==='published'?'ok':s==='rejected'?'bad':s==='reviewing'?'violet':'info';
+  const fetchJson=async(url,options={})=>{
+    const r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options});
+    const data=await r.json().catch(()=>({}));
+    if(r.status===401){showLogin();throw new Error(data.error||'Sesión vencida.')}
+    if(!r.ok) throw new Error(data.error||'Ocurrió un error.');
+    return data;
+  };
+
+  function showLogin(){
+    $('loginBox').hidden=false;$('dashboard').hidden=true;$('topLogout').hidden=true;$('topPasskey').hidden=true;
+  }
+  function showDashboard(){
+    $('loginBox').hidden=true;$('dashboard').hidden=false;$('topLogout').hidden=false;$('topPasskey').hidden=false;
+  }
+
+  function filteredRows(){
     const q=$('search').value.trim().toLowerCase();
-    const rows=state.rows.filter(r=>[r.request_id,r.profile_name,r.applicant_email,r.telegram_link,r.contact_telegram,r.paypal_capture_id].some(v=>String(v||'').toLowerCase().includes(q)));
-    $('count').textContent=rows.length+' solicitud'+(rows.length===1?'':'es');
-    $('cards').innerHTML=rows.map(r=>`
-      <article class="card">
+    const pf=$('paymentFilter').value,rf=$('reviewFilter').value,df=$('dateFilter').value;
+    const cutoff=df==='all'?0:Date.now()-Number(df)*86400000;
+    return state.rows.filter(r=>{
+      const hay=[r.request_id,r.profile_name,r.applicant_email,r.telegram_link,r.contact_telegram,r.paypal_capture_id,r.paypal_order_id].some(v=>String(v||'').toLowerCase().includes(q));
+      const pay=pf==='all'||(pf==='pending'&&r.status==='pending_payment')||(pf==='paid'&&paidStates.has(r.status))||(pf==='refunded'&&r.status==='refunded');
+      const review=rf==='all'||(r.review_status||'new')===rf;
+      const date=!cutoff||new Date(r.created_at).getTime()>=cutoff;
+      return hay&&pay&&review&&date;
+    });
+  }
+
+  function renderStats(){
+    $('sTotal').textContent=state.rows.length;
+    $('sNew').textContent=state.rows.filter(r=>!r.admin_viewed_at).length;
+    $('sPending').textContent=state.rows.filter(r=>r.status==='pending_payment').length;
+    $('sPaid').textContent=state.rows.filter(r=>paidStates.has(r.status)).length;
+    $('sReview').textContent=state.rows.filter(r=>(r.review_status||'new')==='reviewing').length;
+    $('sPublished').textContent=state.rows.filter(r=>(r.review_status||'new')==='published').length;
+  }
+
+  function render(){
+    renderStats();
+    const rows=filteredRows();
+    $('count').textContent=rows.length+' resultado'+(rows.length===1?'':'s');
+    $('cards').innerHTML=rows.map(r=>{
+      const isNew=!r.admin_viewed_at;
+      const review=r.review_status||'new';
+      return `
+      <article class="card ${isNew?'new':''}" data-card="${esc(r.request_id)}">
         <div class="card-head">
-          <div><div class="id">${esc(r.request_id)}</div><div style="color:var(--muted);font-size:12px;margin-top:4px">${fmt(r.created_at)}</div></div>
-          <span class="badge ${statusClass(r.status)}">${esc(statusLabel(r.status))}</span>
+          <div><div class="id">${esc(r.request_id)}</div><div class="meta-mini">${fmt(r.created_at)} · ${esc(r.profile_name)}</div></div>
+          <div class="badges">${isNew?'<span class="badge info">NUEVA</span>':''}<span class="badge ${paymentClass(r.status)}">${esc(paymentLabel(r.status))}</span><span class="badge ${reviewClass(review)}">${esc(reviewLabel(review))}</span></div>
         </div>
         <div class="card-body">
-          <div class="cover">${r.cover_url?`<img src="${esc(r.cover_url)}" alt="Portada enviada para ${esc(r.profile_name)}" draggable="false">`:'<div class="empty">Sin portada disponible</div>'}</div>
+          <div class="cover" data-image="${esc(r.cover_url||'')}">${r.cover_url?`<img src="${esc(r.cover_url)}" alt="Portada de ${esc(r.profile_name)}" draggable="false">`:'<div class="empty">Sin portada</div>'}</div>
           <div>
             <div class="details">
               <div class="label">Nombre del perfil</div><div class="value"><strong>${esc(r.profile_name)}</strong></div>
-              <div class="label">Enlace de Telegram</div><div class="value"><a href="${esc(r.telegram_link)}" target="_blank" rel="noopener noreferrer">${esc(r.telegram_link)}</a></div>
-              <div class="label">Correo</div><div class="value"><a href="mailto:${esc(r.applicant_email)}">${esc(r.applicant_email)}</a></div>
-              <div class="label">Usuario Telegram</div><div class="value">${esc(r.contact_telegram)}</div>
+              <div class="label">Telegram</div><div class="value inline"><a href="${esc(r.telegram_link)}" target="_blank" rel="noopener noreferrer">${esc(r.telegram_link)}</a><button class="btn small ghost" data-copy="${esc(r.telegram_link)}">Copiar</button></div>
+              <div class="label">Correo</div><div class="value inline"><a href="mailto:${esc(r.applicant_email)}">${esc(r.applicant_email)}</a><button class="btn small ghost" data-copy="${esc(r.applicant_email)}">Copiar</button></div>
+              <div class="label">Usuario Telegram</div><div class="value inline">${esc(r.contact_telegram)}<button class="btn small ghost" data-copy="${esc(r.contact_telegram)}">Copiar</button></div>
               <div class="label">Relación</div><div class="value">${esc(r.relation)}</div>
               <div class="label">Información adicional</div><div class="value">${esc(r.note||'Sin información adicional')}</div>
-              <div class="label">Autorización</div><div class="value">${r.authorized?'Sí':'No'}</div>
-              <div class="label">Mayoría de edad</div><div class="value">${r.adult?'Sí':'No'}</div>
-              <div class="label">Transacción PayPal</div><div class="value">${esc(r.paypal_capture_id||'—')}</div>
+              <div class="label">Notas administrativas</div><div class="value">${esc(r.admin_notes||'—')}</div>
+              <div class="label">Autorización / edad</div><div class="value">${r.authorized?'Autorizado':'No'} · ${r.adult?'Mayor de edad':'No confirmado'}</div>
+              <div class="label">Transacción PayPal</div><div class="value inline">${esc(r.paypal_capture_id||'—')}${r.paypal_capture_id?`<button class="btn small ghost" data-copy="${esc(r.paypal_capture_id)}">Copiar</button>`:''}</div>
               <div class="label">Orden PayPal</div><div class="value">${esc(r.paypal_order_id||'—')}</div>
               <div class="label">Importe</div><div class="value">${money(r.payment_amount,r.payment_currency)}</div>
               <div class="label">Fecha de pago</div><div class="value">${fmt(r.paid_at)}</div>
-              <div class="label">Correos enviados</div><div class="value">${fmt(r.emails_sent_at)}</div>
-              <div class="label">Aviso inicial enviado</div><div class="value">${fmt(r.submission_notified_at)}</div>
-              <div class="label">Error aviso inicial</div><div class="value">${esc(r.submission_email_error||'—')}</div>
-              <div class="label">Error de correo</div><div class="value">${esc(r.email_error||'—')}</div>
-              <div class="label">Copia privada GitHub</div><div class="value">${r.github_archive_last_at?fmt(r.github_archive_last_at):(r.github_archive_error?'Error pendiente':'No configurada')}</div>
-              <div class="label">Error de archivo GitHub</div><div class="value">${esc(r.github_archive_error||'—')}</div>
+              <div class="label">Aviso inicial</div><div class="value">${fmt(r.submission_notified_at)}${r.submission_email_error?' · '+esc(r.submission_email_error):''}</div>
+              <div class="label">Correos de pago</div><div class="value">${fmt(r.emails_sent_at)}${r.email_error?' · '+esc(r.email_error):''}</div>
             </div>
             <div class="actions">
-              <button class="btn small" data-resend-submission="${esc(r.request_id)}">Reenviar aviso inicial</button>
-              ${['paid','email_sent','email_error','payment_processing'].includes(r.status)?`<button class="btn small" data-resend="${esc(r.request_id)}">Reenviar correos de pago</button>`:''}
-              ${r.cover_url?`<a class="btn small" href="${esc(r.cover_url)}" target="_blank" rel="noopener noreferrer">Ver portada</a>`:''}
+              ${isNew?`<button class="btn small" data-action="mark_viewed" data-id="${esc(r.request_id)}">Marcar vista</button>`:''}
+              <button class="btn small" data-action="reviewing" data-id="${esc(r.request_id)}">En revisión</button>
+              <button class="btn small good" data-action="published" data-id="${esc(r.request_id)}">Publicada</button>
+              <button class="btn small bad" data-action="rejected" data-id="${esc(r.request_id)}">Rechazar</button>
+              <button class="btn small ghost" data-history="${esc(r.request_id)}">Historial</button>
+              <button class="btn small ghost" data-resend-submission="${esc(r.request_id)}">Reenviar aviso inicial</button>
+              ${paidStates.has(r.status)?`<button class="btn small ghost" data-resend-payment="${esc(r.request_id)}">Reenviar correos de pago</button>`:''}
+              <a class="btn small ghost" href="${esc(r.telegram_link)}" target="_blank" rel="noopener noreferrer">Abrir Telegram</a>
+              <a class="btn small ghost" href="/api/admin-receipt?requestId=${encodeURIComponent(r.request_id)}" target="_blank" rel="noopener">PDF</a>
+              <button class="btn small bad" data-delete="${esc(r.request_id)}">Eliminar</button>
             </div>
+            <div id="timeline-${esc(r.request_id)}" class="timeline" hidden></div>
           </div>
         </div>
-      </article>`).join('')||'<div class="panel empty">No hay solicitudes que coincidan.</div>';
-    document.querySelectorAll('[data-resend]').forEach(btn=>btn.addEventListener('click',()=>resend(btn.dataset.resend,btn)));
-    document.querySelectorAll('[data-resend-submission]').forEach(btn=>btn.addEventListener('click',()=>resendSubmission(btn.dataset.resendSubmission,btn)));
-    document.querySelectorAll('img').forEach(img=>{img.addEventListener('contextmenu',e=>e.preventDefault());img.draggable=false});
+      </article>`;
+    }).join('')||'<div class="panel empty">No hay solicitudes que coincidan.</div>';
+    bindCardActions();
   }
+
+  function bindCardActions(){
+    document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{await navigator.clipboard.writeText(b.dataset.copy);const old=b.textContent;b.textContent='Copiado';setTimeout(()=>b.textContent=old,1000)});
+    document.querySelectorAll('[data-image]').forEach(el=>el.onclick=()=>{if(!el.dataset.image)return;$('modalImage').src=el.dataset.image;$('imageModal').hidden=false});
+    document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>adminAction(b.dataset.id,b.dataset.action,b));
+    document.querySelectorAll('[data-history]').forEach(b=>b.onclick=()=>loadHistory(b.dataset.history,b));
+    document.querySelectorAll('[data-resend-submission]').forEach(b=>b.onclick=()=>postAction('/api/admin-resend-submission',{requestId:b.dataset.resendSubmission},b));
+    document.querySelectorAll('[data-resend-payment]').forEach(b=>b.onclick=()=>postAction('/api/admin-resend',{requestId:b.dataset.resendPayment},b));
+    document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteSubmission(b.dataset.delete,b));
+    document.querySelectorAll('img').forEach(img=>{img.draggable=false;img.oncontextmenu=e=>e.preventDefault()});
+  }
+
   async function load(){
-    const r=await fetch('/api/admin-submissions',{headers:{'X-Admin-Key':state.key},cache:'no-store'});
-    const data=await r.json().catch(()=>({}));
-    if(r.status===401) throw new Error('Clave incorrecta.');
-    if(!r.ok) throw new Error(data.error||'No se pudieron cargar las solicitudes.');
+    const data=await fetchJson('/api/admin-submissions');
     state.rows=data.submissions||[];
-    $('loginBox').hidden=true;$('dashboard').hidden=false;render();
+    showDashboard();render();
   }
-  async function resendSubmission(id,btn){
+
+  async function adminAction(id,action,btn){
+    let note='';
+    if(action==='published'||action==='rejected') note=prompt(action==='published'?'Nota opcional de publicación:':'Motivo o nota opcional del rechazo:','')||'';
+    const old=btn.textContent;btn.disabled=true;btn.textContent='Guardando…';
+    try{await fetchJson('/api/admin-action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:id,action,note})});await load()}
+    catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=old}
+  }
+
+  async function postAction(url,body,btn){
     const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';
-    try{
-      const r=await fetch('/api/admin-resend-submission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});
-      const data=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(data.error||'No se pudo reenviar.');
-      btn.textContent='Enviado';
-      await load();
-    }catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}
+    try{await fetchJson(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});btn.textContent='Enviado';await load()}
+    catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}
   }
-  async function resend(id,btn){
-    const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';
+
+  async function loadHistory(id,btn){
+    const box=$('timeline-'+id);
+    if(!box.hidden){box.hidden=true;return}
+    btn.disabled=true;
     try{
-      const r=await fetch('/api/admin-resend',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});
-      const data=await r.json().catch(()=>({}));
-      if(!r.ok) throw new Error(data.error||'No se pudo reenviar.');
-      btn.textContent='Enviado';
-      await load();
-    }catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}
+      const data=await fetchJson('/api/admin-events?requestId='+encodeURIComponent(id));
+      box.innerHTML=(data.events||[]).map(e=>`<div class="event"><time>${fmt(e.created_at)}</time><div><strong>${esc(e.label)}</strong>${e.details&&Object.keys(e.details).length?`<div class="meta-mini">${esc(JSON.stringify(e.details))}</div>`:''}</div></div>`).join('')||'<div class="muted">Todavía no hay eventos registrados.</div>';
+      box.hidden=false;
+    }catch(e){alert(e.message)}finally{btn.disabled=false}
   }
-  $('login').addEventListener('click',async()=>{
-    state.key=$('key').value.trim();$('loginError').hidden=true;
-    if(!state.key)return;
-    try{localStorage.setItem('nexo_admin_key',state.key);await load()}
-    catch(e){localStorage.removeItem('nexo_admin_key');$('loginError').textContent=e.message;$('loginError').hidden=false}
-  });
-  $('key').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
-  $('refresh').addEventListener('click',()=>load().catch(e=>alert(e.message)));
-  $('logout').addEventListener('click',()=>{localStorage.removeItem('nexo_admin_key');location.reload()});
-  $('search').addEventListener('input',render);
-  if(state.key){$('key').value=state.key;load().catch(()=>{localStorage.removeItem('nexo_admin_key');state.key=''})}
+
+  async function deleteSubmission(id,btn){
+    if(!confirm('Vas a eliminar '+id+' y su portada privada. ¿Continuar?')) return;
+    const typed=prompt('Para confirmar definitivamente, escribe exactamente:\n'+id,'');
+    if(typed!==id){alert('No se eliminó. La confirmación no coincide.');return}
+    btn.disabled=true;
+    try{await fetchJson('/api/admin-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:id,confirmation:typed})});await load()}
+    catch(e){alert(e.message)}finally{btn.disabled=false}
+  }
+
+  function exportCsv(){
+    const rows=filteredRows();
+    const cols=['request_id','created_at','profile_name','telegram_link','applicant_email','contact_telegram','relation','status','review_status','payment_amount','payment_currency','paid_at','paypal_capture_id','paypal_order_id','admin_notes'];
+    const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"';
+    const csv=[cols.join(','),...rows.map(r=>cols.map(k=>quote(r[k])).join(','))].join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='NEXO-solicitudes-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+
+  const b64ToBuf=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);return Uint8Array.from(bin,c=>c.charCodeAt(0))};
+  const bufToB64=b=>{const bytes=new Uint8Array(b);let bin='';bytes.forEach(x=>bin+=String.fromCharCode(x));return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+  function prepCreation(o){o.challenge=b64ToBuf(o.challenge);o.user.id=b64ToBuf(o.user.id);(o.excludeCredentials||[]).forEach(c=>c.id=b64ToBuf(c.id));return o}
+  function prepRequest(o){o.challenge=b64ToBuf(o.challenge);(o.allowCredentials||[]).forEach(c=>c.id=b64ToBuf(c.id));return o}
+  function credentialJSON(c){
+    const r={id:c.id,rawId:bufToB64(c.rawId),type:c.type,response:{}};
+    if(c.response.clientDataJSON)r.response.clientDataJSON=bufToB64(c.response.clientDataJSON);
+    if(c.response.attestationObject)r.response.attestationObject=bufToB64(c.response.attestationObject);
+    if(c.response.authenticatorData)r.response.authenticatorData=bufToB64(c.response.authenticatorData);
+    if(c.response.signature)r.response.signature=bufToB64(c.response.signature);
+    if(c.response.userHandle)r.response.userHandle=bufToB64(c.response.userHandle);
+    if(c.response.getTransports)r.response.transports=c.response.getTransports();
+    r.clientExtensionResults=c.getClientExtensionResults?c.getClientExtensionResults():{};
+    r.authenticatorAttachment=c.authenticatorAttachment||undefined;
+    return r;
+  }
+
+  async function registerPasskey(){
+    if(!window.PublicKeyCredential){alert('Este navegador no admite Passkeys.');return}
+    try{
+      const opts=await fetchJson('/api/admin-passkey-register-options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const cred=await navigator.credentials.create({publicKey:prepCreation(opts)});
+      if(!cred)throw new Error('No se creó la Passkey.');
+      const name=prompt('Nombre para este dispositivo:','Mi dispositivo')||'Mi dispositivo';
+      await fetchJson('/api/admin-passkey-register-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({response:credentialJSON(cred),deviceName:name})});
+      alert('Passkey configurada correctamente.');
+    }catch(e){alert(e.message||'No se pudo configurar la Passkey.')}
+  }
+
+  async function loginPasskey(){
+    if(!window.PublicKeyCredential){$('loginError').textContent='Este navegador no admite Passkeys.';$('loginError').hidden=false;return}
+    try{
+      const opts=await fetchJson('/api/admin-passkey-auth-options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const cred=await navigator.credentials.get({publicKey:prepRequest(opts)});
+      if(!cred)throw new Error('No se obtuvo la Passkey.');
+      await fetchJson('/api/admin-passkey-auth-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({response:credentialJSON(cred)})});
+      await load();
+    }catch(e){$('loginError').textContent=e.message;$('loginError').hidden=false}
+  }
+
+  async function login(){
+    const key=$('key').value.trim();$('loginError').hidden=true;
+    if(!key)return;
+    $('login').disabled=true;
+    try{
+      await fetchJson('/api/admin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+      $('key').value='';await load();
+    }catch(e){$('loginError').textContent=e.message;$('loginError').hidden=false}
+    finally{$('login').disabled=false}
+  }
+
+  async function logout(){
+    try{await fetch('/api/admin-logout',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:'{}'})}catch{}
+    state.rows=[];showLogin();
+  }
+
+  $('login').onclick=login;$('key').onkeydown=e=>{if(e.key==='Enter')login()};
+  $('passkeyLogin').onclick=loginPasskey;$('configurePasskey').onclick=registerPasskey;$('topPasskey').onclick=registerPasskey;
+  $('topLogout').onclick=logout;$('refresh').onclick=()=>load().catch(e=>alert(e.message));$('exportCsv').onclick=exportCsv;
+  ['search','paymentFilter','reviewFilter','dateFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
+  $('modalClose').onclick=()=>{$('imageModal').hidden=true;$('modalImage').src=''};$('imageModal').onclick=e=>{if(e.target===$('imageModal'))$('modalClose').click()};
+  if(!window.PublicKeyCredential){$('passkeyLogin').hidden=true;$('configurePasskey').hidden=true;$('topPasskey').hidden=true}
+  fetch('/api/admin-login',{credentials:'same-origin',cache:'no-store'}).then(r=>r.json()).then(d=>d.authenticated?load():showLogin()).catch(showLogin);
 })();
 </script>
 </body>
