@@ -35,16 +35,16 @@
       "destination": "/nexo-production/privacidad/index.html"
     },
     {
-      "source": "/admin/",
-      "destination": "/nexo-production/admin/index.html"
-    },
-    {
       "source": "/robots.txt",
       "destination": "/nexo-production/robots.txt"
     },
     {
       "source": "/sitemap.xml",
       "destination": "/nexo-production/sitemap.xml"
+    },
+    {
+      "source": "/nexo-control-9x4/",
+      "destination": "/nexo-production/admin/index.html"
     }
   ],
   "headers": [
@@ -83,19 +83,6 @@
         {
           "key": "Cache-Control",
           "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
-      "source": "/admin/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow, noarchive"
         }
       ]
     },
@@ -139,6 +126,19 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=604800, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/nexo-control-9x4/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
         }
       ]
     }
