@@ -1,8 +1,9 @@
-import { json, method, adminAuthorized, clean, supabaseAdmin, loadCoverBuffer, sendEmails } from './_lib.js';
+import { json, method, adminAuthorized, clean, supabaseAdmin, loadCoverBuffer, sendEmails, safeRecordSubmissionEvent, sameOrigin } from './_lib.js';
 
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   if(!adminAuthorized(req)) return json(res,401,{error:'Acceso no autorizado.'});
+  if(!sameOrigin(req)) return json(res,403,{error:'Origen no permitido.'});
   try{
     const rid=clean(req.body?.requestId,40);
     const db=supabaseAdmin();
@@ -18,6 +19,7 @@ export default async function handler(req,res){
       email_error:null,
       updated_at:new Date().toISOString()
     }).eq('request_id',rid);
+    await safeRecordSubmissionEvent(db,rid,'payment_emails_resent','Correos de pago reenviados');
     return json(res,200,{ok:true});
   }catch(e){
     console.error(e);
