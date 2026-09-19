@@ -45,6 +45,11 @@ app.post('/api/admin-resend',api(adminResend));
 app.post('/api/admin-resend-submission',api(adminResendSubmission));
 app.get('/api/health',api(health));
 
+app.use(['/admin','/admin/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
+  res.setHeader('Cache-Control','no-store, max-age=0');
+  res.setHeader('Pragma','no-cache');
+  next();
+});
 app.use('/assets',express.static(path.join(__dirname,'assets'),{maxAge:'7d',immutable:true}));
 app.use(express.static(webRoot,{extensions:['html'],maxAge:'5m'}));
 
