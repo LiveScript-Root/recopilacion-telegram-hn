@@ -19,7 +19,76 @@
 <div><a href="/terminos/">Términos</a> · <a href="/privacidad/">Privacidad</a> · <a href="/contacto/">Contacto</a></div>
 </div></footer>
 <script>
-const p=new URLSearchParams(location.search),st=(p.get('st')||'').toUpperCase(),tx=p.get('tx')||'',amt=p.get('amt')||'',cc=p.get('cc')||'',rid=p.get('requestId')||sessionStorage.getItem('nexo_request_id')||'No disponible';
-document.getElementById('rid').textContent=rid;
-if(st==='COMPLETED'){document.getElementById('badge').textContent='PAGO CONFIRMADO';document.getElementById('state').textContent='Pago completado';document.getElementById('msg').textContent='Tu pago fue completado y hemos recibido tu solicitud. Los administradores revisarán la información proporcionada. El proceso puede tardar hasta 3 días hábiles.';if(tx){const m=document.querySelector('.meta');m.insertAdjacentHTML('beforeend','<div class="row"><span>Transacción PayPal</span><strong>'+tx+'</strong></div>')}if(amt){const m=document.querySelector('.meta');m.insertAdjacentHTML('beforeend','<div class="row"><span>Importe</span><strong>'+amt+' '+(cc||'USD')+'</strong></div>')}}
+(async()=>{
+  const p=new URLSearchParams(location.search);
+  const rid=p.get('requestId')||sessionStorage.getItem('nexo_request_id')||'';
+  const badge=document.getElementById('badge');
+  const title=document.getElementById('title');
+  const msg=document.getElementById('msg');
+  const state=document.getElementById('state');
+  const ridEl=document.getElementById('rid');
+  ridEl.textContent=rid||'No disponible';
+
+  function addRow(label,value,id){
+    let el=id?document.getElementById(id):null;
+    if(!el){
+      const meta=document.querySelector('.meta');
+      meta.insertAdjacentHTML('beforeend','<div class="row"><span>'+label+'</span><strong'+(id?' id="'+id+'"':'')+'></strong></div>');
+      el=id?document.getElementById(id):meta.lastElementChild.querySelector('strong');
+    }
+    el.textContent=value||'—';
+  }
+
+  function paint(data){
+    const s=data.status||'';
+    if(['email_sent','paid','payment_processing','email_error'].includes(s)){
+      badge.textContent='PAGO CONFIRMADO';
+      badge.style.borderColor='#2c6f5a';
+      badge.style.background='#0c2d25';
+      badge.style.color='#66e1b4';
+      title.textContent='Solicitud recibida.';
+      state.textContent=s==='email_sent'?'Pago completado':s==='email_error'?'Pago completado · correo pendiente':'Pago completado';
+      msg.textContent=s==='email_error'
+        ?'Tu pago fue confirmado y hemos recibido tu solicitud. El comprobante por correo puede demorarse, pero no necesitas volver a pagar. Los administradores revisarán la información proporcionada.'
+        :'Tu pago fue confirmado y hemos recibido tu solicitud. Los administradores revisarán la información proporcionada. El proceso puede tardar hasta 3 días hábiles.';
+      if(data.transactionId)addRow('Transacción PayPal',data.transactionId,'txRowValue');
+      if(data.amount)addRow('Importe',Number(data.amount).toFixed(2)+' '+(data.currency||'USD'),'amountRowValue');
+      return true;
+    }
+    badge.textContent='VERIFICANDO PAGO';
+    state.textContent='En verificación';
+    title.textContent='Estamos verificando tu pago.';
+    msg.textContent='No cierres esta página. La confirmación suele tardar solo unos segundos.';
+    return false;
+  }
+
+  if(!/^NEXO-[A-F0-9]{12}$/.test(rid)){
+    badge.textContent='SOLICITUD NO IDENTIFICADA';
+    state.textContent='Sin referencia';
+    title.textContent='No encontramos una solicitud válida.';
+    msg.textContent='Vuelve a NEXO y utiliza el mismo navegador desde el que realizaste la solicitud. Si ya pagaste, contacta a soporte y comparte el ID de transacción de PayPal.';
+    return;
+  }
+
+  for(let i=0;i<8;i++){
+    try{
+      const r=await fetch('/api/submission-status?requestId='+encodeURIComponent(rid),{cache:'no-store'});
+      const data=await r.json().catch(()=>({}));
+      if(r.ok&&paint(data)) return;
+      if(r.status===404){
+        badge.textContent='SOLICITUD NO ENCONTRADA';
+        state.textContent='No encontrada';
+        title.textContent='No encontramos esta solicitud.';
+        msg.textContent='Si ya realizaste el pago, contacta a soporte y comparte tu ID de transacción de PayPal.';
+        return;
+      }
+    }catch(error){console.error(error)}
+    if(i<7)await new Promise(resolve=>setTimeout(resolve,2500));
+  }
+
+  badge.textContent='VERIFICACIÓN PENDIENTE';
+  state.textContent='Pendiente';
+  title.textContent='Estamos terminando la verificación.';
+  msg.textContent='Tu solicitud está registrada. Si ya completaste el pago, no vuelvas a pagar. Puedes revisar esta misma página en unos minutos o contactar a soporte.';
+})();
 </script><script>(function(){function p(){document.querySelectorAll('img').forEach(function(i){i.draggable=false;i.setAttribute('draggable','false')})}p();document.addEventListener('dragstart',function(e){if(e.target&&e.target.tagName==='IMG')e.preventDefault()},true);document.addEventListener('contextmenu',function(e){if(e.target&&e.target.tagName==='IMG')e.preventDefault()},true);document.addEventListener('gesturestart',function(e){e.preventDefault()},{passive:false});document.addEventListener('gesturechange',function(e){e.preventDefault()},{passive:false});})();</script></body></html>
