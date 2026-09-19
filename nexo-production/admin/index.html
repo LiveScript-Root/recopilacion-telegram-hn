@@ -13,7 +13,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>NEXO</span></a><span class="nav-note">Administración privada</span><span class="spacer"></span><button id="topPasskey" class="btn small ghost" hidden>Configurar Passkey</button><button id="topLogout" class="btn small ghost" hidden>Cerrar sesión</button></div></header>
+<header class="top"><div class="wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>NEXO</span></a><span class="nav-note">Administración privada</span><span class="spacer"></span><button id="topPasskey" class="btn small ghost" hidden>Configurar acceso biométrico</button><button id="topLogout" class="btn small ghost" hidden>Cerrar sesión</button></div></header>
 <main class="page"><div class="wrap">
 <div class="eyebrow">Panel privado</div><h1 class="title">Solicitudes de publicación</h1><p class="sub">Controla solicitudes, pagos, revisión, correos, historial y publicación desde un solo lugar.</p>
 
@@ -21,7 +21,7 @@
 <h2 style="margin-top:0">Acceso administrativo</h2>
 <p class="muted">Inicia sesión una vez. NEXO mantendrá este dispositivo conectado de forma segura hasta 30 días.</p>
 <div class="row"><input id="key" class="field" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="login" class="btn primary">Entrar</button></div>
-<div class="security-panel"><button id="passkeyLogin" class="btn small ghost">Entrar con Passkey / Windows Hello / Face ID</button></div>
+<div class="security-panel"><button id="passkeyLogin" class="btn small ghost">Entrar con acceso biométrico / Windows Hello / Face ID</button></div>
 <div id="loginError" class="notice" hidden></div>
 </section>
 
@@ -42,7 +42,7 @@
 <select id="dateFilter" class="select"><option value="all">Todas las fechas</option><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select>
 <div id="count" class="count"></div>
 </div>
-<div class="toolbar-actions"><button id="refresh" class="btn small">Actualizar</button><button id="exportCsv" class="btn small">Exportar CSV</button><button id="configurePasskey" class="btn small">Configurar Passkey</button></div>
+<div class="toolbar-actions"><button id="refresh" class="btn small">Actualizar</button><button id="exportCsv" class="btn small">Exportar CSV</button><button id="configurePasskey" class="btn small">Configurar acceso biométrico</button></div>
 <div id="cards" class="cards"></div>
 </section>
 </div></main>
@@ -55,8 +55,30 @@
   const state={rows:[]};
   const paidStates=new Set(['paid','email_sent','email_error','payment_processing']);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const fmt=d=>d?new Date(d).toLocaleString('es-US',{dateStyle:'medium',timeStyle:'short'}):'—';
-  const money=(v,c)=>v?Number(v).toFixed(2)+' '+(c||'USD'):'—';
+  const fmt=d=>d?new Date(d).toLocaleString('es-US',{dateStyle:'medium',timeStyle:'short'}):'';
+  const money=(v,c)=>v!==null&&v!==undefined&&v!==''?Number(v).toFixed(2)+' '+(c||'USD'):'';
+  const hasValue=v=>!(v===null||v===undefined||v===''||v==='—');
+  const detailRow=(label,value,html='')=>{
+    if(!hasValue(value)&&!html)return '';
+    return '<div class="label">'+esc(label)+'</div><div class="value">'+(html||esc(value))+'</div>';
+  };
+  const correoInicialEstado=r=>{
+    if(r.submission_notified_at)return 'Enviado el '+fmt(r.submission_notified_at);
+    const e=String(r.submission_email_error||'').toLowerCase();
+    if(e.includes('only send testing emails'))return 'No enviado · El servicio de correo está limitado al correo propietario de la cuenta.';
+    if(e.includes('not verified'))return 'No enviado · El dominio de correo todavía no está verificado.';
+    if(r.submission_email_error)return 'No enviado · Hay un problema de configuración del correo.';
+    return 'Pendiente de envío';
+  };
+  const correosPagoEstado=r=>{
+    if(r.emails_sent_at)return 'Enviados el '+fmt(r.emails_sent_at);
+    const e=String(r.email_error||'').toLowerCase();
+    if(e.includes('only send testing emails'))return 'No enviados · El servicio de correo está limitado al correo propietario de la cuenta.';
+    if(e.includes('not verified'))return 'No enviados · El dominio de correo todavía no está verificado.';
+    if(r.email_error)return 'No enviados · Hay un problema de configuración del correo.';
+    if(paidStates.has(r.status))return 'Pendientes de envío';
+    return '';
+  };
   const paymentLabel=s=>({pending_payment:'PENDIENTE DE PAGO',payment_processing:'PROCESANDO',paid:'PAGADO',email_sent:'PAGADO · CORREOS ENVIADOS',email_error:'PAGADO · ERROR DE CORREO',refunded:'REEMBOLSADO',rejected:'RECHAZADO'}[s]||String(s||'DESCONOCIDO').toUpperCase());
   const paymentClass=s=>['email_sent','paid'].includes(s)?'ok':['email_error','payment_processing','pending_payment'].includes(s)?'warn':['refunded','rejected'].includes(s)?'bad':'';
   const reviewLabel=s=>({new:'NUEVA',reviewing:'EN REVISIÓN',published:'PUBLICADA',rejected:'RECHAZADA'}[s||'new']||String(s||'new').toUpperCase());
@@ -120,15 +142,15 @@
               <div class="label">Correo</div><div class="value inline"><a href="mailto:${esc(r.applicant_email)}">${esc(r.applicant_email)}</a><button class="btn small ghost" data-copy="${esc(r.applicant_email)}">Copiar</button></div>
               <div class="label">Usuario Telegram</div><div class="value inline">${esc(r.contact_telegram)}<button class="btn small ghost" data-copy="${esc(r.contact_telegram)}">Copiar</button></div>
               <div class="label">Relación</div><div class="value">${esc(r.relation)}</div>
-              <div class="label">Información adicional</div><div class="value">${esc(r.note||'Sin información adicional')}</div>
-              <div class="label">Notas administrativas</div><div class="value">${esc(r.admin_notes||'—')}</div>
-              <div class="label">Autorización / edad</div><div class="value">${r.authorized?'Autorizado':'No'} · ${r.adult?'Mayor de edad':'No confirmado'}</div>
-              <div class="label">Transacción PayPal</div><div class="value inline">${esc(r.paypal_capture_id||'—')}${r.paypal_capture_id?`<button class="btn small ghost" data-copy="${esc(r.paypal_capture_id)}">Copiar</button>`:''}</div>
-              <div class="label">Orden PayPal</div><div class="value">${esc(r.paypal_order_id||'—')}</div>
-              <div class="label">Importe</div><div class="value">${money(r.payment_amount,r.payment_currency)}</div>
-              <div class="label">Fecha de pago</div><div class="value">${fmt(r.paid_at)}</div>
-              <div class="label">Aviso inicial</div><div class="value">${fmt(r.submission_notified_at)}${r.submission_email_error?' · '+esc(r.submission_email_error):''}</div>
-              <div class="label">Correos de pago</div><div class="value">${fmt(r.emails_sent_at)}${r.email_error?' · '+esc(r.email_error):''}</div>
+              ${r.note?detailRow('Información adicional',r.note):''}
+              ${r.admin_notes?detailRow('Notas administrativas',r.admin_notes):''}
+              <div class="label">Autorización / edad</div><div class="value">${r.authorized?'Autorizado':'No autorizado'} · ${r.adult?'Mayor de edad':'Edad no confirmada'}</div>
+              ${r.paypal_capture_id?detailRow('Transacción PayPal',r.paypal_capture_id,`${esc(r.paypal_capture_id)} <button class="btn small ghost" data-copy="${esc(r.paypal_capture_id)}">Copiar</button>`):''}
+              ${r.paypal_order_id?detailRow('Orden PayPal',r.paypal_order_id):''}
+              ${hasValue(r.payment_amount)?detailRow('Importe',money(r.payment_amount,r.payment_currency)):''}
+              ${r.paid_at?detailRow('Fecha de pago',fmt(r.paid_at)):''}
+              ${detailRow('Aviso inicial',correoInicialEstado(r))}
+              ${correosPagoEstado(r)?detailRow('Correos de pago',correosPagoEstado(r)):''}
             </div>
             <div class="actions">
               ${isNew?`<button class="btn small" data-action="mark_viewed" data-id="${esc(r.request_id)}">Marcar vista</button>`:''}
@@ -136,10 +158,10 @@
               <button class="btn small good" data-action="published" data-id="${esc(r.request_id)}">Publicada</button>
               <button class="btn small bad" data-action="rejected" data-id="${esc(r.request_id)}">Rechazar</button>
               <button class="btn small ghost" data-history="${esc(r.request_id)}">Historial</button>
-              <button class="btn small ghost" data-resend-submission="${esc(r.request_id)}">Reenviar aviso inicial</button>
               ${paidStates.has(r.status)?`<button class="btn small ghost" data-resend-payment="${esc(r.request_id)}">Reenviar correos de pago</button>`:''}
               <a class="btn small ghost" href="${esc(r.telegram_link)}" target="_blank" rel="noopener noreferrer">Abrir Telegram</a>
-              <a class="btn small ghost" href="/api/admin-receipt?requestId=${encodeURIComponent(r.request_id)}" target="_blank" rel="noopener">PDF</a>
+              ${paidStates.has(r.status)&&r.cover_url?`<a class="btn small ghost" href="/api/admin-cover?requestId=${encodeURIComponent(r.request_id)}">Descargar foto</a>`:''}
+              <a class="btn small ghost" href="/api/admin-receipt?requestId=${encodeURIComponent(r.request_id)}" target="_blank" rel="noopener">PDF con foto</a>
               <button class="btn small bad" data-delete="${esc(r.request_id)}">Eliminar</button>
             </div>
             <div id="timeline-${esc(r.request_id)}" class="timeline" hidden></div>
@@ -155,7 +177,6 @@
     document.querySelectorAll('[data-image]').forEach(el=>el.onclick=()=>{if(!el.dataset.image)return;$('modalImage').src=el.dataset.image;$('imageModal').hidden=false});
     document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>adminAction(b.dataset.id,b.dataset.action,b));
     document.querySelectorAll('[data-history]').forEach(b=>b.onclick=()=>loadHistory(b.dataset.history,b));
-    document.querySelectorAll('[data-resend-submission]').forEach(b=>b.onclick=()=>postAction('/api/admin-resend-submission',{requestId:b.dataset.resendSubmission},b));
     document.querySelectorAll('[data-resend-payment]').forEach(b=>b.onclick=()=>postAction('/api/admin-resend',{requestId:b.dataset.resendPayment},b));
     document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteSubmission(b.dataset.delete,b));
     document.querySelectorAll('img').forEach(img=>{img.draggable=false;img.oncontextmenu=e=>e.preventDefault()});
@@ -193,11 +214,9 @@
   }
 
   async function deleteSubmission(id,btn){
-    if(!confirm('Vas a eliminar '+id+' y su portada privada. ¿Continuar?')) return;
-    const typed=prompt('Para confirmar definitivamente, escribe exactamente:\n'+id,'');
-    if(typed!==id){alert('No se eliminó. La confirmación no coincide.');return}
+    if(!confirm('¿Eliminar esta solicitud y su portada privada?')) return;
     btn.disabled=true;
-    try{await fetchJson('/api/admin-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:id,confirmation:typed})});await load()}
+    try{await fetchJson('/api/admin-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:id,confirmation:id})});await load()}
     catch(e){alert(e.message)}finally{btn.disabled=false}
   }
 
@@ -227,23 +246,23 @@
   }
 
   async function registerPasskey(){
-    if(!window.PublicKeyCredential){alert('Este navegador no admite Passkeys.');return}
+    if(!window.PublicKeyCredential){alert('Este navegador no admite acceso biométrico.');return}
     try{
       const opts=await fetchJson('/api/admin-passkey-register-options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
       const cred=await navigator.credentials.create({publicKey:prepCreation(opts)});
-      if(!cred)throw new Error('No se creó la Passkey.');
+      if(!cred)throw new Error('No se creó el acceso biométrico.');
       const name=prompt('Nombre para este dispositivo:','Mi dispositivo')||'Mi dispositivo';
       await fetchJson('/api/admin-passkey-register-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({response:credentialJSON(cred),deviceName:name})});
-      alert('Passkey configurada correctamente.');
-    }catch(e){alert(e.message||'No se pudo configurar la Passkey.')}
+      alert('Acceso biométrico configurado correctamente.');
+    }catch(e){alert(e.message||'No se pudo configurar el acceso biométrico.')}
   }
 
   async function loginPasskey(){
-    if(!window.PublicKeyCredential){$('loginError').textContent='Este navegador no admite Passkeys.';$('loginError').hidden=false;return}
+    if(!window.PublicKeyCredential){$('loginError').textContent='Este navegador no admite acceso biométrico.';$('loginError').hidden=false;return}
     try{
       const opts=await fetchJson('/api/admin-passkey-auth-options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
       const cred=await navigator.credentials.get({publicKey:prepRequest(opts)});
-      if(!cred)throw new Error('No se obtuvo la Passkey.');
+      if(!cred)throw new Error('No se obtuvo el acceso biométrico.');
       await fetchJson('/api/admin-passkey-auth-verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({response:credentialJSON(cred)})});
       await load();
     }catch(e){$('loginError').textContent=e.message;$('loginError').hidden=false}
