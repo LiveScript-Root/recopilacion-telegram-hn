@@ -20,7 +20,7 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
 
 <section id="loginBox" class="panel login">
 <h2 style="margin-top:0">Acceso administrativo</h2>
-<p style="color:var(--muted)">Introduce tu clave privada de administración.</p>
+<p style="color:var(--muted)">Introduce tu clave privada de administración. Este dispositivo recordará el acceso después de entrar correctamente.</p>
 <div class="row"><input id="key" class="field" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="login" class="btn primary">Entrar</button></div>
 <div id="loginError" class="notice" hidden></div>
 </section>
@@ -33,7 +33,7 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
 <script>
 (()=> {
   const $=id=>document.getElementById(id);
-  const state={key:sessionStorage.getItem('nexo_admin_key')||'',rows:[]};
+  const state={key:localStorage.getItem('nexo_admin_key')||'',rows:[]};
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=d=>d?new Date(d).toLocaleString('es-US',{dateStyle:'medium',timeStyle:'short'}):'—';
   const money=(v,c)=>v?Number(v).toFixed(2)+' '+(c||'USD'):'—';
@@ -123,14 +123,14 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
   $('login').addEventListener('click',async()=>{
     state.key=$('key').value.trim();$('loginError').hidden=true;
     if(!state.key)return;
-    try{sessionStorage.setItem('nexo_admin_key',state.key);await load()}
-    catch(e){sessionStorage.removeItem('nexo_admin_key');$('loginError').textContent=e.message;$('loginError').hidden=false}
+    try{localStorage.setItem('nexo_admin_key',state.key);await load()}
+    catch(e){localStorage.removeItem('nexo_admin_key');$('loginError').textContent=e.message;$('loginError').hidden=false}
   });
   $('key').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
   $('refresh').addEventListener('click',()=>load().catch(e=>alert(e.message)));
-  $('logout').addEventListener('click',()=>{sessionStorage.removeItem('nexo_admin_key');location.reload()});
+  $('logout').addEventListener('click',()=>{localStorage.removeItem('nexo_admin_key');location.reload()});
   $('search').addEventListener('input',render);
-  if(state.key){$('key').value=state.key;load().catch(()=>{sessionStorage.removeItem('nexo_admin_key');state.key=''})}
+  if(state.key){$('key').value=state.key;load().catch(()=>{localStorage.removeItem('nexo_admin_key');state.key=''})}
 })();
 </script>
 </body>
