@@ -11,6 +11,7 @@ import submissionStatus from './api/submission-status.js';
 import paypalCreateOrder from './api/paypal-create-order.js';
 import paypalCaptureOrder from './api/paypal-capture-order.js';
 import paypalWebhook from './api/paypal-webhook.js';
+import paypalIpn from './api/paypal-ipn.js';
 import adminSubmissions from './api/admin-submissions.js';
 import adminResend from './api/admin-resend.js';
 import adminResendSubmission from './api/admin-resend-submission.js';
@@ -33,8 +34,6 @@ const webRoot=path.join(__dirname,'nexo-production');
 
 app.disable('x-powered-by');
 app.set('trust proxy',1);
-app.use(express.json({limit:'1mb'}));
-
 app.use((req,res,next)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('X-Frame-Options','DENY');
@@ -46,6 +45,8 @@ app.use((req,res,next)=>{
 });
 
 function api(handler){ return (req,res)=>Promise.resolve(handler(req,res)).catch(err=>{console.error(err);if(!res.headersSent)res.status(500).json({error:'Error interno.'})}); }
+app.post('/api/paypal-ipn',express.raw({type:'application/x-www-form-urlencoded',limit:'256kb'}),api(paypalIpn));
+app.use(express.json({limit:'1mb'}));
 app.get('/api/public-config',api(publicConfig));
 app.post('/api/submissions',api(submissions));
 app.post('/api/submissions-cover',api(submissionsCover));
