@@ -55,6 +55,17 @@ app.post('/api/paypal-webhook',api(paypalWebhook));
 app.get('/api/admin-submissions',api(adminSubmissions));
 app.post('/api/admin-resend',api(adminResend));
 app.post('/api/admin-resend-submission',api(adminResendSubmission));
+app.get('/api/admin-login',api(adminLogin));
+app.post('/api/admin-login',api(adminLogin));
+app.post('/api/admin-logout',api(adminLogout));
+app.post('/api/admin-action',api(adminAction));
+app.get('/api/admin-events',api(adminEvents));
+app.post('/api/admin-delete',api(adminDelete));
+app.get('/api/admin-receipt',api(adminReceipt));
+app.post('/api/admin-passkey-register-options',api(adminPasskeyRegisterOptions));
+app.post('/api/admin-passkey-register-verify',api(adminPasskeyRegisterVerify));
+app.post('/api/admin-passkey-auth-options',api(adminPasskeyAuthOptions));
+app.post('/api/admin-passkey-auth-verify',api(adminPasskeyAuthVerify));
 app.get('/api/health',api(health));
 
 app.use(['/admin','/admin/','/nexo-control-9x4','/nexo-control-9x4/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
