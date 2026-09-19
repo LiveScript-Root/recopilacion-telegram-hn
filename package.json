@@ -11,6 +11,8 @@
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",
     "express": "5.1.0",
-    "resend": "6.28.1"
+    "resend": "6.28.1",
+    "pdfkit": "0.17.2",
+    "@simplewebauthn/server": "13.1.2"
   }
 }
