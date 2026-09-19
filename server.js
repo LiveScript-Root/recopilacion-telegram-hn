@@ -174,6 +174,20 @@ app.listen(port,'0.0.0.0',()=>{
           const {data:row,error:rowError}=await db.from('nexo_submissions').select('request_id,cover_uploaded,cover_path,submission_notified_at,submission_email_error').eq('request_id',rid).single();
           if(rowError||!row||row.cover_uploaded!==true) throw rowError||new Error('La portada no quedó confirmada.');
 
+          const {error:paidTestError}=await db.from('nexo_submissions').update({
+            status:'paid',
+            payment_amount:'1.00',
+            payment_currency:'USD',
+            paypal_capture_id:'AUTO-'+rid,
+            paid_at:new Date().toISOString(),
+            updated_at:new Date().toISOString()
+          }).eq('request_id',rid);
+          if(paidTestError) throw paidTestError;
+
+          const coverResp=await fetch('http://127.0.0.1:'+port+'/api/admin-cover?requestId='+encodeURIComponent(rid),{headers:{Cookie:cookie}});
+          const coverBytes=Buffer.from(await coverResp.arrayBuffer());
+          if(coverResp.status!==200||!String(coverResp.headers.get('content-type')||'').startsWith('image/')||coverBytes.length<50) throw new Error('Descarga privada de foto inválida.');
+
           for(const action of ['mark_viewed','reviewing','published','rejected','reset_review']){
             const ar=await fetch('http://127.0.0.1:'+port+'/api/admin-action',{
               method:'POST',
@@ -236,7 +250,7 @@ app.listen(port,'0.0.0.0',()=>{
           if(delResp.status!==200||deleted.ok!==true) throw new Error('Eliminación administrativa inválida.');
           rid='';coverPath='';
 
-          console.log('NEXO deep self-check: OK (form, storage, admin-actions, history, PDF, passkey-options, logout, delete, email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
+          console.log('NEXO deep self-check: OK (form, storage, private-photo-download, admin-actions, history, PDF-with-photo, passkey-options, logout, delete, email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
         }catch(error){
           console.error('NEXO deep self-check: FAILED',error);
         }finally{
