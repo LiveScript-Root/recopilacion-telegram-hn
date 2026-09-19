@@ -162,6 +162,48 @@ export async function sendEmails(record, coverAttachment) {
 }
 
 
+export async function sendSubmissionReceivedAdmin(record, coverAttachment) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  if (!apiKey || !from) throw new Error('El servicio de correo no está configurado.');
+  const resend = new Resend(apiKey);
+  const support = ADMIN_EMAIL;
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:700px;margin:auto;color:#111827">
+      <h1>NEXO — Nueva solicitud recibida</h1>
+      <p>La solicitud fue guardada correctamente antes del pago.</p>
+      <p><b>Estado:</b> PENDIENTE DE PAGO</p>
+      <p><b>ID:</b> ${esc(record.request_id)}</p>
+      <p><b>Perfil:</b> ${esc(record.profile_name)}</p>
+      <p><b>Telegram:</b> <a href="${esc(record.telegram_link)}">${esc(record.telegram_link)}</a></p>
+      <p><b>Correo:</b> ${esc(record.applicant_email)}</p>
+      <p><b>Usuario Telegram:</b> ${esc(record.contact_telegram)}</p>
+      <p><b>Relación:</b> ${esc(record.relation)}</p>
+      <p><b>Información adicional:</b> ${esc(record.note || 'Sin información adicional')}</p>
+      <p><b>Autorización:</b> ${record.authorized ? 'Sí' : 'No'}</p>
+      <p><b>Mayoría de edad:</b> ${record.adult ? 'Sí' : 'No'}</p>
+      <p><b>Fecha:</b> ${esc(new Date(record.created_at || Date.now()).toLocaleString('es-US', { timeZone: 'America/Los_Angeles' }))}</p>
+      <p>Cuando PayPal confirme el pago, NEXO actualizará este mismo ID.</p>
+    </div>`;
+  const attachments = coverAttachment ? [{
+    filename: record.cover_name || 'portada.jpg',
+    content: coverAttachment.toString('base64')
+  }] : undefined;
+
+  const result = await resend.emails.send({
+    from,
+    to: [support],
+    replyTo: record.applicant_email,
+    subject: 'NEXO — Solicitud recibida — ' + record.request_id + ' — ' + record.profile_name,
+    html,
+    attachments
+  });
+  if (result.error) throw new Error('No se pudo enviar la solicitud a administración: ' + result.error.message);
+  return result.data?.id || null;
+}
+
+
 async function githubArchiveRepo() {
   const token = process.env.GITHUB_ARCHIVE_TOKEN || '';
   const repo = process.env.GITHUB_ARCHIVE_REPO || '';
