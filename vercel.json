@@ -1,0 +1,32 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": true,
+  "rewrites": [
+    { "source": "/", "destination": "/nexo-production/index.html" },
+    { "source": "/anunciar/", "destination": "/nexo-production/anunciar/index.html" },
+    { "source": "/pago/", "destination": "/nexo-production/pago/index.html" },
+    { "source": "/solicitud-recibida/", "destination": "/nexo-production/solicitud-recibida/index.html" },
+    { "source": "/contacto/", "destination": "/nexo-production/contacto/index.html" },
+    { "source": "/eliminacion/", "destination": "/nexo-production/eliminacion/index.html" },
+    { "source": "/terminos/", "destination": "/nexo-production/terminos/index.html" },
+    { "source": "/privacidad/", "destination": "/nexo-production/privacidad/index.html" },
+    { "source": "/admin/", "destination": "/nexo-production/admin/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(self)" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ]
+}
