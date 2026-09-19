@@ -1,4 +1,4 @@
-import { json, method, clean, supabaseAdmin, paypalAccessToken, PRICE, CURRENCY } from './_lib.js';
+import { json, method, clean, supabaseAdmin, paypalAccessToken, PRICE, CURRENCY, safeRecordSubmissionEvent } from './_lib.js';
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   try{
@@ -32,6 +32,7 @@ export default async function handler(req,res){
     const order=await r.json();
     if(!r.ok||!order.id) throw new Error(order?.message||'No se pudo crear la orden.');
     await db.from('nexo_submissions').update({paypal_order_id:order.id,updated_at:new Date().toISOString()}).eq('request_id',rid);
+    await safeRecordSubmissionEvent(db,rid,'payment_started','Pago PayPal iniciado',{orderId:order.id,amount:PRICE,currency:CURRENCY});
     return json(res,201,{orderId:order.id});
   }catch(e){console.error(e);return json(res,500,{error:'No se pudo iniciar el pago con PayPal.'});}
 }
