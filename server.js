@@ -11,6 +11,7 @@ import paypalCaptureOrder from './api/paypal-capture-order.js';
 import paypalWebhook from './api/paypal-webhook.js';
 import adminSubmissions from './api/admin-submissions.js';
 import adminResend from './api/admin-resend.js';
+import adminResendSubmission from './api/admin-resend-submission.js';
 import health from './api/health.js';
 
 const app=express();
@@ -41,6 +42,7 @@ app.post('/api/paypal-capture-order',api(paypalCaptureOrder));
 app.post('/api/paypal-webhook',api(paypalWebhook));
 app.get('/api/admin-submissions',api(adminSubmissions));
 app.post('/api/admin-resend',api(adminResend));
+app.post('/api/admin-resend-submission',api(adminResendSubmission));
 app.get('/api/health',api(health));
 
 app.use('/assets',express.static(path.join(__dirname,'assets'),{maxAge:'7d',immutable:true}));
