@@ -14,6 +14,16 @@ import paypalWebhook from './api/paypal-webhook.js';
 import adminSubmissions from './api/admin-submissions.js';
 import adminResend from './api/admin-resend.js';
 import adminResendSubmission from './api/admin-resend-submission.js';
+import adminLogin from './api/admin-login.js';
+import adminLogout from './api/admin-logout.js';
+import adminAction from './api/admin-action.js';
+import adminEvents from './api/admin-events.js';
+import adminDelete from './api/admin-delete.js';
+import adminReceipt from './api/admin-receipt.js';
+import adminPasskeyRegisterOptions from './api/admin-passkey-register-options.js';
+import adminPasskeyRegisterVerify from './api/admin-passkey-register-verify.js';
+import adminPasskeyAuthOptions from './api/admin-passkey-auth-options.js';
+import adminPasskeyAuthVerify from './api/admin-passkey-auth-verify.js';
 import health from './api/health.js';
 
 const app=express();
@@ -47,7 +57,7 @@ app.post('/api/admin-resend',api(adminResend));
 app.post('/api/admin-resend-submission',api(adminResendSubmission));
 app.get('/api/health',api(health));
 
-app.use(['/admin','/admin/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
+app.use(['/admin','/admin/','/nexo-control-9x4','/nexo-control-9x4/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
   res.setHeader('Cache-Control','no-store, max-age=0');
   res.setHeader('Pragma','no-cache');
   next();
@@ -65,6 +75,7 @@ page('/eliminacion/','eliminacion/index.html');
 page('/terminos/','terminos/index.html');
 page('/privacidad/','privacidad/index.html');
 page('/admin/','admin/index.html');
+page('/nexo-control-9x4/','admin/index.html');
 
 app.use((req,res)=>res.status(404).sendFile(path.join(webRoot,'404.html')));
 
