@@ -1,4 +1,4 @@
-import { json, method, clean, supabaseAdmin, BUCKET, loadCoverBuffer, archiveSubmissionToGithub } from './_lib.js';
+import { json, method, clean, supabaseAdmin, BUCKET, loadCoverBuffer, archiveSubmissionToGithub, sendSubmissionReceivedAdmin } from './_lib.js';
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   try{
@@ -30,6 +30,22 @@ export default async function handler(req,res){
       console.error('GitHub archive:',archiveError);
       await db.from('nexo_submissions').update({
         github_archive_error:String(archiveError.message||archiveError).slice(0,1000),
+        updated_at:new Date().toISOString()
+      }).eq('request_id',requestId);
+    }
+
+    try{
+      const cover=await loadCoverBuffer(db,updated);
+      await sendSubmissionReceivedAdmin(updated,cover);
+      await db.from('nexo_submissions').update({
+        submission_notified_at:new Date().toISOString(),
+        submission_email_error:null,
+        updated_at:new Date().toISOString()
+      }).eq('request_id',requestId);
+    }catch(emailError){
+      console.error('Submission email:',emailError);
+      await db.from('nexo_submissions').update({
+        submission_email_error:String(emailError.message||emailError).slice(0,1000),
         updated_at:new Date().toISOString()
       }).eq('request_id',requestId);
     }
