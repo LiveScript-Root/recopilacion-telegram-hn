@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Administración — NEXO</title>
+<style>
+:root{color-scheme:dark;--bg:#090d14;--panel:#0f1623;--panel2:#121d30;--line:#25324a;--text:#f7f9ff;--muted:#9dacbf;--blue:#3972f6;--ok:#37d39a;--warn:#ffbf5b;--bad:#ef5965}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:radial-gradient(circle at 50% -20%,#13264a 0,#090d14 38%,#070a10 100%)}
+a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}.top{border-bottom:1px solid var(--line);background:#080c13ee;position:sticky;top:0;z-index:20}.nav{height:68px;display:flex;align-items:center;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.08em;text-decoration:none}.mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#21d8ff,#2460ff);display:grid;place-items:center;color:#06101c;font-weight:1000}.nav span:last-child{color:var(--muted);font-size:13px}.page{padding:36px 0 80px}.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#7da5ff;font-weight:800}.title{font-size:clamp(32px,5vw,52px);margin:10px 0 8px;letter-spacing:-.04em}.sub{color:var(--muted);max-width:720px}.panel{background:linear-gradient(180deg,#101722,#0c121c);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:24px}.login{max-width:520px}.row{display:flex;gap:10px}.field{flex:1;min-height:46px;border:1px solid #3a4b68;background:#0b1320;color:#fff;border-radius:10px;padding:0 13px;outline:none}.btn{border:1px solid #35507f;background:#16233a;color:#fff;border-radius:10px;padding:0 17px;min-height:46px;font-weight:800;cursor:pointer}.btn.primary{background:linear-gradient(135deg,#447cff,#3169e9)}.btn.small{min-height:36px;padding:0 12px;font-size:12px}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:22px 0 14px}.toolbar input{min-width:260px}.count{color:var(--muted);font-size:13px}.cards{display:grid;gap:14px}.card{border:1px solid var(--line);background:#0e1521;border-radius:14px;overflow:hidden}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}.id{font-weight:900;letter-spacing:.04em}.badge{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.06em;border:1px solid #4b5a75;background:#182133}.badge.ok{border-color:#28765e;background:#0d2d25;color:#77e7c0}.badge.warn{border-color:#7b5e29;background:#2c2211;color:#ffd38c}.badge.bad{border-color:#793844;background:#341a20;color:#ffb9c0}.card-body{display:grid;grid-template-columns:170px 1fr;gap:20px;padding:18px}.cover{width:170px;height:210px;border-radius:12px;overflow:hidden;background:#151c28;border:1px solid var(--line)}.cover img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}.details{display:grid;grid-template-columns:160px minmax(0,1fr);align-content:start}.details div{padding:9px 0;border-bottom:1px solid #1d2637}.label{color:#8fa0b9;font-size:12px}.value{overflow-wrap:anywhere}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.notice{padding:12px 14px;border-radius:10px;border:1px solid #60414a;background:#2b171d;color:#ffd0d5;margin-top:14px}.empty{padding:32px;text-align:center;color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:720px){.card-body{grid-template-columns:1fr}.cover{width:100%;height:auto;aspect-ratio:4/5}.details{grid-template-columns:1fr}.details .label{padding-bottom:0}.row{flex-direction:column}.toolbar{align-items:stretch}.toolbar input{min-width:0;width:100%}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap nav"><a class="brand" href="/"><span class="mark">N</span><span>NEXO</span></a><span>Administración privada</span></div></header>
+<main class="page"><div class="wrap">
+<div class="eyebrow">Panel privado</div><h1 class="title">Solicitudes de publicación</h1><p class="sub">Consulta los datos enviados por cada cliente, la portada, el estado del pago y la transacción de PayPal.</p>
+
+<section id="loginBox" class="panel login">
+<h2 style="margin-top:0">Acceso administrativo</h2>
+<p style="color:var(--muted)">Introduce tu clave privada de administración.</p>
+<div class="row"><input id="key" class="field" type="password" autocomplete="current-password" placeholder="Clave de administración"><button id="login" class="btn primary">Entrar</button></div>
+<div id="loginError" class="notice" hidden></div>
+</section>
+
+<section id="dashboard" hidden>
+<div class="toolbar"><div><button id="refresh" class="btn small">Actualizar</button> <button id="logout" class="btn small">Cerrar sesión</button></div><input id="search" class="field" type="search" placeholder="Buscar nombre, correo, Telegram o ID"><div id="count" class="count"></div></div>
+<div id="cards" class="cards"></div>
+</section>
+</div></main>
+<script>
+(()=> {
+  const $=id=>document.getElementById(id);
+  const state={key:sessionStorage.getItem('nexo_admin_key')||'',rows:[]};
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmt=d=>d?new Date(d).toLocaleString('es-US',{dateStyle:'medium',timeStyle:'short'}):'—';
+  const money=(v,c)=>v?Number(v).toFixed(2)+' '+(c||'USD'):'—';
+  const statusLabel=s=>({
+    pending_payment:'PENDIENTE DE PAGO',
+    payment_processing:'PROCESANDO',
+    paid:'PAGADO',
+    email_sent:'PAGADO · CORREOS ENVIADOS',
+    email_error:'PAGADO · ERROR DE CORREO',
+    refunded:'REEMBOLSADO',
+    rejected:'RECHAZADO'
+  }[s]||String(s||'DESCONOCIDO').toUpperCase());
+  const statusClass=s=>['email_sent','paid'].includes(s)?'ok':['email_error','payment_processing','pending_payment'].includes(s)?'warn':['refunded','rejected'].includes(s)?'bad':'';
+  function render(){
+    const q=$('search').value.trim().toLowerCase();
+    const rows=state.rows.filter(r=>[r.request_id,r.profile_name,r.applicant_email,r.telegram_link,r.contact_telegram,r.paypal_capture_id].some(v=>String(v||'').toLowerCase().includes(q)));
+    $('count').textContent=rows.length+' solicitud'+(rows.length===1?'':'es');
+    $('cards').innerHTML=rows.map(r=>`
+      <article class="card">
+        <div class="card-head">
+          <div><div class="id">${esc(r.request_id)}</div><div style="color:var(--muted);font-size:12px;margin-top:4px">${fmt(r.created_at)}</div></div>
+          <span class="badge ${statusClass(r.status)}">${esc(statusLabel(r.status))}</span>
+        </div>
+        <div class="card-body">
+          <div class="cover">${r.cover_url?`<img src="${esc(r.cover_url)}" alt="Portada enviada para ${esc(r.profile_name)}" draggable="false">`:'<div class="empty">Sin portada disponible</div>'}</div>
+          <div>
+            <div class="details">
+              <div class="label">Nombre del perfil</div><div class="value"><strong>${esc(r.profile_name)}</strong></div>
+              <div class="label">Enlace de Telegram</div><div class="value"><a href="${esc(r.telegram_link)}" target="_blank" rel="noopener noreferrer">${esc(r.telegram_link)}</a></div>
+              <div class="label">Correo</div><div class="value"><a href="mailto:${esc(r.applicant_email)}">${esc(r.applicant_email)}</a></div>
+              <div class="label">Usuario Telegram</div><div class="value">${esc(r.contact_telegram)}</div>
+              <div class="label">Relación</div><div class="value">${esc(r.relation)}</div>
+              <div class="label">Información adicional</div><div class="value">${esc(r.note||'Sin información adicional')}</div>
+              <div class="label">Autorización</div><div class="value">${r.authorized?'Sí':'No'}</div>
+              <div class="label">Mayoría de edad</div><div class="value">${r.adult?'Sí':'No'}</div>
+              <div class="label">Transacción PayPal</div><div class="value">${esc(r.paypal_capture_id||'—')}</div>
+              <div class="label">Orden PayPal</div><div class="value">${esc(r.paypal_order_id||'—')}</div>
+              <div class="label">Importe</div><div class="value">${money(r.payment_amount,r.payment_currency)}</div>
+              <div class="label">Fecha de pago</div><div class="value">${fmt(r.paid_at)}</div>
+              <div class="label">Correos enviados</div><div class="value">${fmt(r.emails_sent_at)}</div>
+              <div class="label">Error de correo</div><div class="value">${esc(r.email_error||'—')}</div>
+            </div>
+            <div class="actions">
+              ${['paid','email_sent','email_error','payment_processing'].includes(r.status)?`<button class="btn small" data-resend="${esc(r.request_id)}">Reenviar correos</button>`:''}
+              ${r.cover_url?`<a class="btn small" href="${esc(r.cover_url)}" target="_blank" rel="noopener noreferrer">Ver portada</a>`:''}
+            </div>
+          </div>
+        </div>
+      </article>`).join('')||'<div class="panel empty">No hay solicitudes que coincidan.</div>';
+    document.querySelectorAll('[data-resend]').forEach(btn=>btn.addEventListener('click',()=>resend(btn.dataset.resend,btn)));
+    document.querySelectorAll('img').forEach(img=>{img.addEventListener('contextmenu',e=>e.preventDefault());img.draggable=false});
+  }
+  async function load(){
+    const r=await fetch('/api/admin-submissions',{headers:{'X-Admin-Key':state.key},cache:'no-store'});
+    const data=await r.json().catch(()=>({}));
+    if(r.status===401) throw new Error('Clave incorrecta.');
+    if(!r.ok) throw new Error(data.error||'No se pudieron cargar las solicitudes.');
+    state.rows=data.submissions||[];
+    $('loginBox').hidden=true;$('dashboard').hidden=false;render();
+  }
+  async function resend(id,btn){
+    const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';
+    try{
+      const r=await fetch('/api/admin-resend',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(data.error||'No se pudo reenviar.');
+      btn.textContent='Enviado';
+      await load();
+    }catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}
+  }
+  $('login').addEventListener('click',async()=>{
+    state.key=$('key').value.trim();$('loginError').hidden=true;
+    if(!state.key)return;
+    try{sessionStorage.setItem('nexo_admin_key',state.key);await load()}
+    catch(e){sessionStorage.removeItem('nexo_admin_key');$('loginError').textContent=e.message;$('loginError').hidden=false}
+  });
+  $('key').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
+  $('refresh').addEventListener('click',()=>load().catch(e=>alert(e.message)));
+  $('logout').addEventListener('click',()=>{sessionStorage.removeItem('nexo_admin_key');location.reload()});
+  $('search').addEventListener('input',render);
+  if(state.key){$('key').value=state.key;load().catch(()=>{sessionStorage.removeItem('nexo_admin_key');state.key=''})}
+})();
+</script>
+</body>
+</html>
