@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /pago/
+Disallow: /solicitud-recibida/
+Sitemap: https://livescript-root.github.io/recopilacion-telegram-hn/nexo-prueba/sitemap.xml
