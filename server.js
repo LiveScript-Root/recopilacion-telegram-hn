@@ -20,6 +20,7 @@ import adminAction from './api/admin-action.js';
 import adminEvents from './api/admin-events.js';
 import adminDelete from './api/admin-delete.js';
 import adminReceipt from './api/admin-receipt.js';
+import adminCover from './api/admin-cover.js';
 import adminPasskeyRegisterOptions from './api/admin-passkey-register-options.js';
 import adminPasskeyRegisterVerify from './api/admin-passkey-register-verify.js';
 import adminPasskeyAuthOptions from './api/admin-passkey-auth-options.js';
@@ -62,19 +63,25 @@ app.post('/api/admin-action',api(adminAction));
 app.get('/api/admin-events',api(adminEvents));
 app.post('/api/admin-delete',api(adminDelete));
 app.get('/api/admin-receipt',api(adminReceipt));
+app.get('/api/admin-cover',api(adminCover));
 app.post('/api/admin-passkey-register-options',api(adminPasskeyRegisterOptions));
 app.post('/api/admin-passkey-register-verify',api(adminPasskeyRegisterVerify));
 app.post('/api/admin-passkey-auth-options',api(adminPasskeyAuthOptions));
 app.post('/api/admin-passkey-auth-verify',api(adminPasskeyAuthVerify));
 app.get('/api/health',api(health));
 
-app.use(['/admin','/admin/','/nexo-control-9x4','/nexo-control-9x4/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
+app.use(['/nexo-control-9x4','/nexo-control-9x4/','/anunciar','/anunciar/','/pago','/pago/','/solicitud-recibida','/solicitud-recibida/'],(req,res,next)=>{
   res.setHeader('Cache-Control','no-store, max-age=0');
   res.setHeader('Pragma','no-cache');
   next();
 });
+app.use(['/admin','/admin/','/admin/index.html'],(req,res)=>res.status(404).sendFile(path.join(webRoot,'404.html')));
+app.use(['/nexo-control-9x4','/nexo-control-9x4/'],(req,res,next)=>{
+  res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');
+  next();
+});
 app.use('/assets',express.static(path.join(__dirname,'assets'),{maxAge:'7d',immutable:true}));
-app.use(express.static(webRoot,{extensions:['html'],maxAge:'5m'}));
+app.use(express.static(webRoot,{extensions:['html'],maxAge:'5m',index:false}));
 
 const page=(route,file)=>app.get(route,(req,res)=>res.sendFile(path.join(webRoot,file)));
 page('/','index.html');
@@ -85,7 +92,6 @@ page('/contacto/','contacto/index.html');
 page('/eliminacion/','eliminacion/index.html');
 page('/terminos/','terminos/index.html');
 page('/privacidad/','privacidad/index.html');
-page('/admin/','admin/index.html');
 page('/nexo-control-9x4/','admin/index.html');
 
 app.use((req,res)=>res.status(404).sendFile(path.join(webRoot,'404.html')));
