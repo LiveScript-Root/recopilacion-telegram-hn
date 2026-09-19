@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { adminAuthorized } from '../api/_lib.js';
 
 const mustExist = [
   'nexo-production/index.html',
@@ -49,6 +50,23 @@ const preview=fs.readFileSync('nexo-production/anunciar/index.html','utf8');
 for (const term of ['Vista previa','previewImage','previewName','previewPlaceholder']) {
   if (!preview.includes(term)) throw new Error('Vista previa incompleta: '+term);
 }
+
+
+for (const [name,html] of [['admin',admin],['anunciar',preview]]) {
+  const styles=[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m=>m[1]);
+  for (const css of styles) {
+    const opens=(css.match(/{/g)||[]).length;
+    const closes=(css.match(/}/g)||[]).length;
+    if (opens!==closes) throw new Error('CSS desbalanceado en '+name+': '+opens+' llaves abren y '+closes+' cierran.');
+  }
+}
+
+const originalAdminToken=process.env.ADMIN_ACCESS_TOKEN;
+process.env.ADMIN_ACCESS_TOKEN='NEXO-CI-AUTH-TEST';
+if (!adminAuthorized({headers:{'x-admin-key':'NEXO-CI-AUTH-TEST'}})) throw new Error('Autenticación administrativa rechaza una clave correcta.');
+if (adminAuthorized({headers:{'x-admin-key':'clave-incorrecta'}})) throw new Error('Autenticación administrativa acepta una clave incorrecta.');
+if (originalAdminToken===undefined) delete process.env.ADMIN_ACCESS_TOKEN;
+else process.env.ADMIN_ACCESS_TOKEN=originalAdminToken;
 
 const scriptRe = new RegExp('<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>', 'gi');
 for (const [name,html] of [['admin',admin],['anunciar',preview],['pago',payment],['solicitud-recibida',received]]) {
