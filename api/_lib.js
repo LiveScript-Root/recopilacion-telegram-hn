@@ -419,6 +419,7 @@ export async function finalizePaidSubmission(requestIdValue, payment) {
     .maybeSingle();
 
   if (lockError) throw lockError;
+  if (locked) await safeRecordSubmissionEvent(db,requestIdValue,'payment_confirmed','Pago PayPal confirmado',{captureId:updates.paypal_capture_id,amount:updates.payment_amount,currency:updates.payment_currency});
   if (!locked) {
     const { data: current } = await db.from('nexo_submissions').select('*').eq('request_id', requestIdValue).single();
     return current || existing;
@@ -450,6 +451,7 @@ export async function finalizePaidSubmission(requestIdValue, payment) {
       updated_at: new Date().toISOString()
     }).eq('request_id', requestIdValue).select('*').single();
     if (emailStateError) throw emailStateError;
+    await safeRecordSubmissionEvent(db,requestIdValue,'payment_emails_sent','Comprobante y aviso de pago enviados');
     return emailed || locked;
   } catch (error) {
     await db.from('nexo_submissions').update({
