@@ -59,7 +59,8 @@ export function safeFilename(name, mime) {
 export function supabaseAdmin() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
-  const backendSecret = process.env.NEXO_BACKEND_SECRET;\n  if (!url || !key || !backendSecret) throw new Error('Supabase no está configurado.');
+  const backendSecret = process.env.NEXO_BACKEND_SECRET;
+  if (!url || !key || !backendSecret) throw new Error('Supabase no está configurado.');
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false }, global: { headers: { 'x-nexo-backend-secret': backendSecret } } });
 }
 
