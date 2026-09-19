@@ -26,6 +26,8 @@ create table if not exists public.nexo_submissions (
   paid_at timestamptz,
   emails_sent_at timestamptz,
   email_error text,
+  github_archive_last_at timestamptz,
+  github_archive_error text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
