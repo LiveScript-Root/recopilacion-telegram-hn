@@ -138,7 +138,7 @@ export async function sendEmails(record, coverAttachment) {
       <p><b>Fecha de pago:</b> ${esc(date)}</p>
     </div>`;
 
-  const attachment = coverAttachment ? [{ filename: record.cover_name || 'portada.jpg', content: coverAttachment.toString('base64'), contentType: record.cover_mime || 'image/jpeg' }] : undefined;
+  const attachment = coverAttachment ? [{ filename: record.cover_name || 'portada.jpg', content: coverAttachment.toString('base64') }] : undefined;
   const client = await resend.emails.send({
     from,
     to: [record.applicant_email],
