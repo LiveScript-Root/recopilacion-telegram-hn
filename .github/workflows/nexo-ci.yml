@@ -1,3 +1,4 @@
+# Production validation
 name: NEXO CI
 on:
   push:
