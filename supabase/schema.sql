@@ -13,6 +13,7 @@ create table if not exists public.nexo_submissions (
   cover_name text not null,
   cover_mime text not null,
   cover_size bigint not null,
+  cover_uploaded boolean not null default false,
   authorized boolean not null default false,
   adult boolean not null default false,
   status text not null default 'pending_payment'
