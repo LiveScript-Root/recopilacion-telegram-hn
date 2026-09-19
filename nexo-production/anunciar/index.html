@@ -130,6 +130,8 @@ pubForm.addEventListener('submit',async e=>{
     const draft={...payload,requestId:created.requestId,createdAt:new Date().toISOString()};
     sessionStorage.setItem('nexo_publish_draft',JSON.stringify(draft));
     sessionStorage.setItem('nexo_request_id',created.requestId);
+    localStorage.setItem('nexo_publish_draft',JSON.stringify(draft));
+    localStorage.setItem('nexo_request_id',created.requestId);
     location.href='/pago/';
   }catch(error){
     err.textContent=error.message||'No se pudo completar la operación.';
