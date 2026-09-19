@@ -79,7 +79,7 @@
     if(paidStates.has(r.status))return 'Pendientes de envío';
     return '';
   };
-  const paymentLabel=s=>({pending_payment:'PENDIENTE DE PAGO',payment_processing:'PROCESANDO',paid:'PAGADO',email_sent:'PAGADO · CORREOS ENVIADOS',email_error:'PAGADO · ERROR DE CORREO',refunded:'REEMBOLSADO',rejected:'RECHAZADO'}[s]||String(s||'DESCONOCIDO').toUpperCase());
+  const paymentLabel=s=>({pending_payment:'PENDIENTE DE PAGO',payment_processing:'PROCESANDO',paid:'PAGADO',email_sent:'PAGADO · CORREOS ENVIADOS',email_error:'PAGADO · CORREO PENDIENTE',refunded:'REEMBOLSADO',rejected:'RECHAZADO'}[s]||String(s||'DESCONOCIDO').toUpperCase());
   const paymentClass=s=>['email_sent','paid'].includes(s)?'ok':['email_error','payment_processing','pending_payment'].includes(s)?'warn':['refunded','rejected'].includes(s)?'bad':'';
   const reviewLabel=s=>({new:'NUEVA',reviewing:'EN REVISIÓN',published:'PUBLICADA',rejected:'RECHAZADA'}[s||'new']||String(s||'new').toUpperCase());
   const reviewClass=s=>s==='published'?'ok':s==='rejected'?'bad':s==='reviewing'?'violet':'info';
