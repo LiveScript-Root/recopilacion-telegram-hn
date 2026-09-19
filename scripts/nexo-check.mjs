@@ -16,6 +16,7 @@ const mustExist = [
   'api/paypal-webhook.js',
   'api/admin-submissions.js',
   'api/admin-resend.js',
+  'api/admin-resend-submission.js',
   'supabase/schema.sql',
   'vercel.json',
   '.env.example'
@@ -41,7 +42,7 @@ if (!received.includes('/api/submission-status')) throw new Error('La página de
 if (received.includes("st==='COMPLETED'")) throw new Error('La página de retorno confía en query string de PayPal.');
 
 const admin=fs.readFileSync('nexo-production/admin/index.html','utf8');
-if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend')) throw new Error('Panel admin incompleto.');
+if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend') || !admin.includes('/api/admin-resend-submission')) throw new Error('Panel admin incompleto.');
 
 const schema=fs.readFileSync('supabase/schema.sql','utf8');
 for (const term of ['nexo_submissions','nexo_paypal_events','cover_uploaded','nexo-submissions']) {
