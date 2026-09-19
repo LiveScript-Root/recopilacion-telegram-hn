@@ -75,6 +75,8 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
               <div class="label">Fecha de pago</div><div class="value">${fmt(r.paid_at)}</div>
               <div class="label">Correos enviados</div><div class="value">${fmt(r.emails_sent_at)}</div>
               <div class="label">Error de correo</div><div class="value">${esc(r.email_error||'—')}</div>
+              <div class="label">Copia privada GitHub</div><div class="value">${r.github_archive_last_at?fmt(r.github_archive_last_at):(r.github_archive_error?'Error pendiente':'No configurada')}</div>
+              <div class="label">Error de archivo GitHub</div><div class="value">${esc(r.github_archive_error||'—')}</div>
             </div>
             <div class="actions">
               ${['paid','email_sent','email_error','payment_processing'].includes(r.status)?`<button class="btn small" data-resend="${esc(r.request_id)}">Reenviar correos</button>`:''}
