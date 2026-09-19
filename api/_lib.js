@@ -66,7 +66,10 @@ export function supabaseAdmin() {
 export function adminAuthorized(req) {
   const expected = process.env.ADMIN_ACCESS_TOKEN || '';
   const got = clean(req.headers['x-admin-key'], 300);
-  return expected && got && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(expected));
+  if (!expected || !got) return false;
+  const a = Buffer.from(got);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 export async function paypalAccessToken() {
@@ -169,30 +172,44 @@ export async function finalizePaidSubmission(requestIdValue, payment) {
   const { data: existing, error: getError } = await db.from('nexo_submissions').select('*').eq('request_id', requestIdValue).single();
   if (getError || !existing) throw new Error('Solicitud no encontrada.');
   if (existing.status === 'email_sent') return existing;
+  if (existing.status === 'payment_processing') return existing;
 
   const updates = {
-    status: 'paid',
+    status: 'payment_processing',
     paypal_order_id: payment.orderId || existing.paypal_order_id,
     paypal_capture_id: payment.captureId || existing.paypal_capture_id,
     paypal_payer_email: payment.payerEmail || existing.paypal_payer_email,
     payment_amount: payment.amount || PRICE,
     payment_currency: payment.currency || CURRENCY,
-    paid_at: payment.paidAt || new Date().toISOString(),
+    paid_at: payment.paidAt || existing.paid_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
-  const { data: paid, error: upError } = await db.from('nexo_submissions').update(updates).eq('request_id', requestIdValue).select('*').single();
-  if (upError) throw upError;
+
+  const { data: locked, error: lockError } = await db
+    .from('nexo_submissions')
+    .update(updates)
+    .eq('request_id', requestIdValue)
+    .in('status', ['pending_payment','paid','email_error'])
+    .select('*')
+    .maybeSingle();
+
+  if (lockError) throw lockError;
+  if (!locked) {
+    const { data: current } = await db.from('nexo_submissions').select('*').eq('request_id', requestIdValue).single();
+    return current || existing;
+  }
 
   try {
-    const cover = await loadCoverBuffer(db, paid);
-    await sendEmails(paid, cover);
-    const { data: emailed } = await db.from('nexo_submissions').update({
+    const cover = await loadCoverBuffer(db, locked);
+    await sendEmails(locked, cover);
+    const { data: emailed, error: emailStateError } = await db.from('nexo_submissions').update({
       status: 'email_sent',
       emails_sent_at: new Date().toISOString(),
       email_error: null,
       updated_at: new Date().toISOString()
     }).eq('request_id', requestIdValue).select('*').single();
-    return emailed || paid;
+    if (emailStateError) throw emailStateError;
+    return emailed || locked;
   } catch (error) {
     await db.from('nexo_submissions').update({
       status: 'email_error',
