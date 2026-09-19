@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://nexo-production-production.up.railway.app"
-          for path in / /anunciar/ /pago/ /solicitud-recibida/ /contacto/ /eliminacion/ /terminos/ /privacidad/ /admin/ /nexo-control-9x4/ /api/health /api/public-config; do
+          for path in / /anunciar/ /pago/ /solicitud-recibida/ /contacto/ /eliminacion/ /terminos/ /privacidad/ /nexo-control-9x4/ /api/health /api/public-config; do
             code="$(curl -sS -o "/tmp/$(echo "$path" | tr '/?' '__').out" -w '%{http_code}' --max-time 15 "$BASE$path")"
             test "$code" = "200"
           done
@@ -45,11 +45,15 @@ jobs:
           grep -q 'id="previewName"' /tmp/anunciar.html
           grep -q 'Así se verá tu perfil dentro de NEXO.' /tmp/anunciar.html
 
-          curl -fsS "$BASE/admin/" -o /tmp/admin.html
+          code="$(curl -sS -o /tmp/admin404.html -w '%{http_code}' "$BASE/admin/")"
+          test "$code" = "404"
+          curl -fsS "$BASE/nexo-control-9x4/" -o /tmp/admin.html
           grep -q 'id="login"' /tmp/admin.html
           grep -q '/api/admin-submissions' /tmp/admin.html
-          grep -q 'Reenviar aviso inicial' /tmp/admin.html
-          curl -fsSI "$BASE/admin/" | grep -qi '^cache-control: .*no-store'
+          grep -q 'Descargar foto' /tmp/admin.html
+          grep -q 'PDF con foto' /tmp/admin.html
+          if grep -q 'Reenviar aviso inicial' /tmp/admin.html; then exit 1; fi
+          if grep -q 'You can only send testing emails' /tmp/admin.html; then exit 1; fi
           curl -fsSI "$BASE/nexo-control-9x4/" | grep -qi '^cache-control: .*no-store'
           curl -fsSI "$BASE/anunciar/" | grep -qi '^cache-control: .*no-store'
           if grep -Fq '\\n' /tmp/admin.html; then
@@ -62,7 +66,10 @@ jobs:
           grep -q '/api/paypal-capture-order' /tmp/pago.html
           grep -q 'disable-funding=credit,paylater' /tmp/pago.html
           grep -q 'id="paypal-direct"' /tmp/pago.html
-          grep -q 'https://www.paypal.com/ncp/payment/WCC2TYW6EW2R2' /tmp/pago.html
+          grep -q 'id="paypal-standard-form"' /tmp/pago.html
+          grep -q 'name="custom"' /tmp/pago.html
+          grep -q 'name="notify_url"' /tmp/pago.html
+          grep -q '/api/paypal-ipn' /tmp/pago.html
 
           curl -fsS "$BASE/nexo-control-9x4/" -o /tmp/admin2.html
           grep -q '/api/admin-login' /tmp/admin2.html
@@ -71,7 +78,7 @@ jobs:
           grep -q '/api/admin-events' /tmp/admin2.html
           grep -q '/api/admin-delete' /tmp/admin2.html
           grep -q '/api/admin-receipt' /tmp/admin2.html
-          grep -q 'Passkey / Windows Hello / Face ID' /tmp/admin2.html
+          grep -q 'acceso biométrico / Windows Hello / Face ID' /tmp/admin2.html
           grep -q 'Exportar CSV' /tmp/admin2.html
           if grep -q 'localStorage.*nexo_admin_key' /tmp/admin2.html; then
             echo "Admin should not store the admin key in localStorage"
