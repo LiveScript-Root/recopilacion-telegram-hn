@@ -87,5 +87,9 @@ jobs:
 
           grep -q '"ok":true' /tmp/_api_health.out
           grep -q '"price":"12.00"' /tmp/_api_public-config.out
+          grep -q '"paypalHostedAmount":"1.00"' /tmp/_api_public-config.out
+
+          ipn_code="$(curl -sS -o /tmp/paypal-ipn-invalid.out -w '%{http_code}' --max-time 20 -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data 'foo=bar' "$BASE/api/paypal-ipn")"
+          test "$ipn_code" = "200"
 
           echo "NEXO live smoke checks: OK"
