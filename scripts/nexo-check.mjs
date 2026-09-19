@@ -15,6 +15,7 @@ const mustExist = [
   'api/paypal-create-order.js',
   'api/paypal-capture-order.js',
   'api/paypal-webhook.js',
+  'api/paypal-ipn.js',
   'api/admin-submissions.js',
   'api/admin-resend.js',
   'api/admin-resend-submission.js',
@@ -23,6 +24,7 @@ const mustExist = [
   'api/admin-passkey-register-verify.js',
   'api/admin-passkey-register-options.js',
   'api/admin-receipt.js',
+  'api/admin-cover.js',
   'api/admin-delete.js',
   'api/admin-events.js',
   'api/admin-action.js',
@@ -46,15 +48,17 @@ if (!announce.includes('/api/submissions') || !announce.includes('uploadToSigned
 
 const payment=fs.readFileSync('nexo-production/pago/index.html','utf8');
 if (!payment.includes('/api/paypal-create-order') || !payment.includes('/api/paypal-capture-order')) throw new Error('Pago no usa Orders API.');
-if (!payment.includes('id="paypal-direct"') || !payment.includes('WCC2TYW6EW2R2')) throw new Error('Falta el enlace directo de respaldo de PayPal.');
+if (!payment.includes('paypal-standard-form') || !payment.includes('hosted_button_id') || !payment.includes('/api/paypal-ipn')) throw new Error('Falta el respaldo PayPal asociado por IPN.');
 
 const received=fs.readFileSync('nexo-production/solicitud-recibida/index.html','utf8');
 if (!received.includes('/api/submission-status')) throw new Error('La página de retorno no verifica estado server-side.');
 if (received.includes("st==='COMPLETED'")) throw new Error('La página de retorno confía en query string de PayPal.');
 
 const admin=fs.readFileSync('nexo-production/admin/index.html','utf8');
-if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend') || !admin.includes('/api/admin-resend-submission')) throw new Error('Panel admin incompleto.');
-for (const term of ['/api/admin-login','/api/admin-logout','/api/admin-action','/api/admin-events','/api/admin-delete','/api/admin-receipt','Passkey / Windows Hello / Face ID','Exportar CSV','En revisión','Publicada']) { if (!admin.includes(term)) throw new Error('Mejora administrativa ausente: '+term); }
+if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend')) throw new Error('Panel admin incompleto.');
+for (const term of ['/api/admin-login','/api/admin-logout','/api/admin-action','/api/admin-events','/api/admin-delete','/api/admin-receipt','/api/admin-cover','Exportar CSV','En revisión','Publicada','Descargar foto','PDF con foto']) { if (!admin.includes(term)) throw new Error('Mejora administrativa ausente: '+term); }
+if (admin.includes('Reenviar aviso inicial')) throw new Error('El botón de aviso inicial no debe mostrarse.');
+if (admin.includes('You can only send testing emails')) throw new Error('El panel no debe mostrar errores técnicos en inglés.');
 
 const preview=fs.readFileSync('nexo-production/anunciar/index.html','utf8');
 for (const term of ['Vista previa','previewImage','previewName','previewPlaceholder']) {
@@ -93,7 +97,8 @@ for (const term of ['nexo_submissions','nexo_paypal_events','cover_uploaded','ne
 }
 
 const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'));
-if (!vercel.rewrites?.some(r=>r.source==='/admin/')) throw new Error('Falta ruta /admin/.');
+if (vercel.rewrites?.some(r=>r.source==='/admin/')) throw new Error('La ruta pública /admin/ no debe existir.');
+if (!vercel.rewrites?.some(r=>r.source==='/nexo-control-9x4/')) throw new Error('Falta la ruta administrativa privada.');
 if (!vercel.headers?.some(r=>JSON.stringify(r).includes('Content-Security-Policy'))) throw new Error('Falta CSP.');
 
 console.log('NEXO production static checks: OK');
