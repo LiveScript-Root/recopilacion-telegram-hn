@@ -50,8 +50,9 @@ for (const term of ['Vista previa','previewImage','previewName','previewPlacehol
   if (!preview.includes(term)) throw new Error('Vista previa incompleta: '+term);
 }
 
+const scriptRe = new RegExp('<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>', 'gi');
 for (const [name,html] of [['admin',admin],['anunciar',preview],['pago',payment],['solicitud-recibida',received]]) {
-  const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]).filter(Boolean);
+  const scripts=[...html.matchAll(scriptRe)].map(m=>m[1]).filter(Boolean);
   for (const source of scripts) {
     try { new Function(source); }
     catch (error) { throw new Error('JavaScript inválido en '+name+': '+error.message); }
