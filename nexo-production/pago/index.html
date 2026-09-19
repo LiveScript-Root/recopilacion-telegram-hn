@@ -13,7 +13,19 @@
 </nav></div></header>
 <main class="page"><div class="wrap"><a class="crumb" href="/anunciar/">← Volver a tu perfil</a><div class="eyebrow">Publicación en NEXO</div><h1>Revisa y continúa<br>con tu pago.</h1><p class="lead">El pago se procesa de forma segura mediante PayPal.</p>
 <div class="payment-layout"><section class="panel"><div class="steps"><div class="step"><b>1</b>Tu perfil</div><div class="step active"><b>2</b>Pago y confirmación</div></div><div id="summary" class="summary"></div></section>
-<aside class="paybox"><h2 style="margin-top:0">Resumen del pedido</h2><div class="row"><strong>Total</strong><strong>$12.00 USD</strong></div><p style="color:#5e6877;line-height:1.5">Publicación de perfil en NEXO</p><a id="paypal-direct" class="paypal" href="https://www.paypal.com/ncp/payment/WCC2TYW6EW2R2">PayPal</a><div id="paypal-buttons" style="margin-top:18px" hidden></div><div id="payStatus" style="font-size:12px;color:#697586;text-align:center;margin-top:10px">Al continuar, serás dirigido a PayPal.</div></aside></div></div></main>
+<aside class="paybox"><h2 style="margin-top:0">Resumen del pedido</h2><div class="row"><strong>Total</strong><strong id="checkoutTotal">—</strong></div><p style="color:#5e6877;line-height:1.5">Publicación de perfil en NEXO</p>
+<form id="paypal-standard-form" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" id="hosted_button_id" value="">
+<input type="hidden" name="custom" id="paypal_custom" value="">
+<input type="hidden" name="notify_url" id="paypal_notify_url" value="">
+<input type="hidden" name="return" id="paypal_return" value="">
+<input type="hidden" name="cancel_return" id="paypal_cancel" value="">
+<input type="hidden" name="rm" value="2">
+<input type="hidden" name="charset" value="utf-8">
+<button id="paypal-direct" class="paypal" type="submit" style="width:100%;border:0;cursor:pointer">PayPal</button>
+</form>
+<div id="paypal-buttons" style="margin-top:18px" hidden></div><div id="payStatus" style="font-size:12px;color:#697586;text-align:center;margin-top:10px">Al continuar, serás dirigido a PayPal.</div></aside></div></div></main>
 <footer class="footer"><div class="wrap">
 <div>© NEXO · Directorio de perfiles y canales</div>
 <div><a href="/terminos/">Términos</a> · <a href="/privacidad/">Privacidad</a> · <a href="/contacto/">Contacto</a></div>
@@ -23,8 +35,8 @@
   const status=document.getElementById('payStatus');
   const summary=document.getElementById('summary');
   let d={};
-  try{d=JSON.parse(sessionStorage.getItem('nexo_publish_draft')||'{}')}catch{}
-  const rid=d.requestId||sessionStorage.getItem('nexo_request_id')||'';
+  try{d=JSON.parse(sessionStorage.getItem('nexo_publish_draft')||localStorage.getItem('nexo_publish_draft')||'{}')}catch{}
+  const rid=d.requestId||sessionStorage.getItem('nexo_request_id')||localStorage.getItem('nexo_request_id')||'';
 
   if(!d.profileName||!rid){
     summary.innerHTML='<div class="alert show">No encontramos una solicitud activa. Vuelve al formulario para continuar.</div><a class="btn primary" href="/anunciar/">Ir al formulario</a>';
@@ -51,6 +63,13 @@
     const health=await healthResp.json().catch(()=>({}));
     if(!cfgResp.ok) throw new Error(cfg.error||'No se pudo cargar PayPal.');
 
+    document.getElementById('checkoutTotal').textContent=Number(cfg.paypalHostedAmount||cfg.price||0).toFixed(2)+' '+(cfg.currency||'USD');
+    document.getElementById('hosted_button_id').value=cfg.paypalHostedButtonId||'WCC2TYW6EW2R2';
+    document.getElementById('paypal_custom').value=rid;
+    document.getElementById('paypal_notify_url').value=location.origin+'/api/paypal-ipn';
+    document.getElementById('paypal_return').value=location.origin+'/solicitud-recibida/?requestId='+encodeURIComponent(rid);
+    document.getElementById('paypal_cancel').value=location.origin+'/pago/';
+
     if(!healthResp.ok||health?.services?.paypal!==true){
       direct.hidden=false;
       paypalButtons.hidden=true;
@@ -58,7 +77,7 @@
       return;
     }
 
-    direct.hidden=true;
+    document.getElementById('paypal-standard-form').hidden=true;
     paypalButtons.hidden=false;
     const script=document.createElement('script');
     script.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(cfg.paypalClientId)+'&currency=USD&components=buttons&disable-funding=credit,paylater';
