@@ -167,7 +167,33 @@ app.listen(port,'0.0.0.0',()=>{
           const {data:row,error:rowError}=await db.from('nexo_submissions').select('request_id,cover_uploaded,cover_path,submission_notified_at,submission_email_error').eq('request_id',rid).single();
           if(rowError||!row||row.cover_uploaded!==true) throw rowError||new Error('La portada no quedó confirmada.');
 
-          console.log('NEXO deep self-check: OK ('+rid+', email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
+          for(const action of ['mark_viewed','reviewing','published','reset_review']){
+            const ar=await fetch('http://127.0.0.1:'+port+'/api/admin-action',{
+              method:'POST',
+              headers:{'Content-Type':'application/json',Cookie:cookie},
+              body:JSON.stringify({requestId:rid,action,note:action==='published'?'Prueba automática':''})
+            });
+            if(ar.status!==200) throw new Error('Admin action '+action+': HTTP '+ar.status+' '+(await ar.text()).slice(0,240));
+          }
+
+          const eventsResp=await fetch('http://127.0.0.1:'+port+'/api/admin-events?requestId='+encodeURIComponent(rid),{headers:{Cookie:cookie}});
+          const events=await eventsResp.json();
+          if(eventsResp.status!==200||!Array.isArray(events.events)||events.events.length<4) throw new Error('Historial administrativo inválido.');
+
+          const pdfResp=await fetch('http://127.0.0.1:'+port+'/api/admin-receipt?requestId='+encodeURIComponent(rid),{headers:{Cookie:cookie}});
+          const pdf=Buffer.from(await pdfResp.arrayBuffer());
+          if(pdfResp.status!==200||!String(pdfResp.headers.get('content-type')||'').includes('application/pdf')||pdf.length<500) throw new Error('PDF administrativo inválido.');
+
+          const delResp=await fetch('http://127.0.0.1:'+port+'/api/admin-delete',{
+            method:'POST',
+            headers:{'Content-Type':'application/json',Cookie:cookie},
+            body:JSON.stringify({requestId:rid,confirmation:rid})
+          });
+          const deleted=await delResp.json().catch(()=>({}));
+          if(delResp.status!==200||deleted.ok!==true) throw new Error('Eliminación administrativa inválida.');
+          rid='';coverPath='';
+
+          console.log('NEXO deep self-check: OK (form, storage, admin-actions, history, PDF, delete, email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
         }catch(error){
           console.error('NEXO deep self-check: FAILED',error);
         }finally{
