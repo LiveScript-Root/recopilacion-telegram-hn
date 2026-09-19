@@ -1,4 +1,4 @@
-import { json, method, clean, validEmail, validTelegramLink, validTelegramUser, requestId, safeFilename, supabaseAdmin, BUCKET } from './_lib.js';
+import { json, method, clean, validEmail, validTelegramLink, validTelegramUser, requestId, safeFilename, supabaseAdmin, BUCKET, safeRecordSubmissionEvent } from './_lib.js';
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   try{
@@ -25,6 +25,7 @@ export default async function handler(req,res){
       cover_mime:coverMime,cover_size:coverSize,cover_uploaded:false,authorized,adult,status:'pending_payment'
     });
     if(insertError) throw insertError;
+    await safeRecordSubmissionEvent(db,rid,'created','Solicitud creada',{profileName,applicantEmail});
     const {data:upload,error:uploadError}=await db.storage.from(BUCKET).createSignedUploadUrl(coverPath);
     if(uploadError||!upload?.token) throw uploadError||new Error('No se pudo preparar la carga de imagen.');
     return json(res,201,{requestId:rid,coverPath,uploadToken:upload.token});
