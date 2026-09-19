@@ -81,13 +81,15 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
               <div class="label">Error de archivo GitHub</div><div class="value">${esc(r.github_archive_error||'—')}</div>
             </div>
             <div class="actions">
-              <button class="btn small" data-resend-submission="${esc(r.request_id)}">Reenviar aviso inicial</button>\n              ${['paid','email_sent','email_error','payment_processing'].includes(r.status)?`<button class="btn small" data-resend="${esc(r.request_id)}">Reenviar correos de pago</button>`:''}
+              <button class="btn small" data-resend-submission="${esc(r.request_id)}">Reenviar aviso inicial</button>
+              ${['paid','email_sent','email_error','payment_processing'].includes(r.status)?`<button class="btn small" data-resend="${esc(r.request_id)}">Reenviar correos de pago</button>`:''}
               ${r.cover_url?`<a class="btn small" href="${esc(r.cover_url)}" target="_blank" rel="noopener noreferrer">Ver portada</a>`:''}
             </div>
           </div>
         </div>
       </article>`).join('')||'<div class="panel empty">No hay solicitudes que coincidan.</div>';
-    document.querySelectorAll('[data-resend]').forEach(btn=>btn.addEventListener('click',()=>resend(btn.dataset.resend,btn)));\n    document.querySelectorAll('[data-resend-submission]').forEach(btn=>btn.addEventListener('click',()=>resendSubmission(btn.dataset.resendSubmission,btn)));
+    document.querySelectorAll('[data-resend]').forEach(btn=>btn.addEventListener('click',()=>resend(btn.dataset.resend,btn)));
+    document.querySelectorAll('[data-resend-submission]').forEach(btn=>btn.addEventListener('click',()=>resendSubmission(btn.dataset.resendSubmission,btn)));
     document.querySelectorAll('img').forEach(img=>{img.addEventListener('contextmenu',e=>e.preventDefault());img.draggable=false});
   }
   async function load(){
@@ -98,7 +100,17 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
     state.rows=data.submissions||[];
     $('loginBox').hidden=true;$('dashboard').hidden=false;render();
   }
-  async function resendSubmission(id,btn){\n    const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';\n    try{\n      const r=await fetch('/api/admin-resend-submission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});\n      const data=await r.json().catch(()=>({}));\n      if(!r.ok) throw new Error(data.error||'No se pudo reenviar.');\n      btn.textContent='Enviado';\n      await load();\n    }catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}\n  }\n  async function resend(id,btn){
+  async function resendSubmission(id,btn){
+    const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';
+    try{
+      const r=await fetch('/api/admin-resend-submission',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(data.error||'No se pudo reenviar.');
+      btn.textContent='Enviado';
+      await load();
+    }catch(e){alert(e.message);btn.textContent=old}finally{btn.disabled=false}
+  }
+  async function resend(id,btn){
     const old=btn.textContent;btn.disabled=true;btn.textContent='Enviando…';
     try{
       const r=await fetch('/api/admin-resend',{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Key':state.key},body:JSON.stringify({requestId:id})});
