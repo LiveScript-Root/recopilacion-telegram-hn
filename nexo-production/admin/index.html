@@ -74,6 +74,8 @@ a{color:inherit}button,input{font:inherit}.wrap{width:min(1180px,calc(100% - 32p
               <div class="label">Importe</div><div class="value">${money(r.payment_amount,r.payment_currency)}</div>
               <div class="label">Fecha de pago</div><div class="value">${fmt(r.paid_at)}</div>
               <div class="label">Correos enviados</div><div class="value">${fmt(r.emails_sent_at)}</div>
+              <div class="label">Aviso inicial enviado</div><div class="value">${fmt(r.submission_notified_at)}</div>
+              <div class="label">Error aviso inicial</div><div class="value">${esc(r.submission_email_error||'—')}</div>
               <div class="label">Error de correo</div><div class="value">${esc(r.email_error||'—')}</div>
               <div class="label">Copia privada GitHub</div><div class="value">${r.github_archive_last_at?fmt(r.github_archive_last_at):(r.github_archive_error?'Error pendiente':'No configurada')}</div>
               <div class="label">Error de archivo GitHub</div><div class="value">${esc(r.github_archive_error||'—')}</div>
