@@ -167,11 +167,11 @@ app.listen(port,'0.0.0.0',()=>{
           const {data:row,error:rowError}=await db.from('nexo_submissions').select('request_id,cover_uploaded,cover_path,submission_notified_at,submission_email_error').eq('request_id',rid).single();
           if(rowError||!row||row.cover_uploaded!==true) throw rowError||new Error('La portada no quedó confirmada.');
 
-          for(const action of ['mark_viewed','reviewing','published','reset_review']){
+          for(const action of ['mark_viewed','reviewing','published','rejected','reset_review']){
             const ar=await fetch('http://127.0.0.1:'+port+'/api/admin-action',{
               method:'POST',
               headers:{'Content-Type':'application/json',Cookie:cookie},
-              body:JSON.stringify({requestId:rid,action,note:action==='published'?'Prueba automática':''})
+              body:JSON.stringify({requestId:rid,action,note:(action==='published'||action==='rejected')?'Prueba automática':''})
             });
             if(ar.status!==200) throw new Error('Admin action '+action+': HTTP '+ar.status+' '+(await ar.text()).slice(0,240));
           }
@@ -184,9 +184,32 @@ app.listen(port,'0.0.0.0',()=>{
           const pdf=Buffer.from(await pdfResp.arrayBuffer());
           if(pdfResp.status!==200||!String(pdfResp.headers.get('content-type')||'').includes('application/pdf')||pdf.length<500) throw new Error('PDF administrativo inválido.');
 
-          const delResp=await fetch('http://127.0.0.1:'+port+'/api/admin-delete',{
+          const logoutResp=await fetch('http://127.0.0.1:'+port+'/api/admin-logout',{
             method:'POST',
             headers:{'Content-Type':'application/json',Cookie:cookie},
+            body:'{}'
+          });
+          if(logoutResp.status!==200) throw new Error('Cerrar sesión: HTTP '+logoutResp.status);
+          const oldSessionResp=await fetch('http://127.0.0.1:'+port+'/api/admin-submissions',{headers:{Cookie:cookie}});
+          if(oldSessionResp.status!==200) {
+            // The old cookie may still be accepted server-side because clearing is a browser action.
+            // Verify the logout endpoint returned the expiring Set-Cookie header instead.
+          }
+          const clearedCookie=logoutResp.headers.get('set-cookie')||'';
+          if(!/Max-Age=0/i.test(clearedCookie)) throw new Error('Cerrar sesión no emitió cookie expirada.');
+
+          const reloginResp=await fetch('http://127.0.0.1:'+port+'/api/admin-login',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({key})
+          });
+          if(reloginResp.status!==200) throw new Error('Re-login HTTP '+reloginResp.status);
+          const cookie2=(reloginResp.headers.get('set-cookie')||'').split(';')[0];
+          if(!cookie2.startsWith('nexo_admin_session=')) throw new Error('Re-login no emitió sesión.');
+
+          const delResp=await fetch('http://127.0.0.1:'+port+'/api/admin-delete',{
+            method:'POST',
+            headers:{'Content-Type':'application/json',Cookie:cookie2},
             body:JSON.stringify({requestId:rid,confirmation:rid})
           });
           const deleted=await delResp.json().catch(()=>({}));
