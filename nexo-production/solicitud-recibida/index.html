@@ -21,7 +21,7 @@
 <script>
 (async()=>{
   const p=new URLSearchParams(location.search);
-  const rid=p.get('requestId')||sessionStorage.getItem('nexo_request_id')||'';
+  const rid=p.get('requestId')||sessionStorage.getItem('nexo_request_id')||localStorage.getItem('nexo_request_id')||'';
   const badge=document.getElementById('badge');
   const title=document.getElementById('title');
   const msg=document.getElementById('msg');
@@ -53,6 +53,10 @@
         :'Tu pago fue confirmado y hemos recibido tu solicitud. Los administradores revisarán la información proporcionada. El proceso puede tardar hasta 3 días hábiles.';
       if(data.transactionId)addRow('Transacción PayPal',data.transactionId,'txRowValue');
       if(data.amount)addRow('Importe',Number(data.amount).toFixed(2)+' '+(data.currency||'USD'),'amountRowValue');
+      sessionStorage.removeItem('nexo_request_id');
+      sessionStorage.removeItem('nexo_publish_draft');
+      localStorage.removeItem('nexo_request_id');
+      localStorage.removeItem('nexo_publish_draft');
       return true;
     }
     badge.textContent='VERIFICANDO PAGO';
