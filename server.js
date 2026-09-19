@@ -184,6 +184,19 @@ app.listen(port,'0.0.0.0',()=>{
           const pdf=Buffer.from(await pdfResp.arrayBuffer());
           if(pdfResp.status!==200||!String(pdfResp.headers.get('content-type')||'').includes('application/pdf')||pdf.length<500) throw new Error('PDF administrativo inválido.');
 
+          const passkeyOptionsResp=await fetch('http://127.0.0.1:'+port+'/api/admin-passkey-register-options',{
+            method:'POST',
+            headers:{'Content-Type':'application/json',Cookie:cookie},
+            body:'{}'
+          });
+          const passkeyOptions=await passkeyOptionsResp.json().catch(()=>({}));
+          if(passkeyOptionsResp.status!==200||!passkeyOptions.challenge||!passkeyOptions.rp?.id) throw new Error('Configurar Passkey no pudo generar opciones válidas.');
+          const challengeCookie=passkeyOptionsResp.headers.get('set-cookie')||'';
+          const challengeMatch=challengeCookie.match(/nexo_passkey_challenge=([^;]+)/);
+          if(challengeMatch){
+            try{await db.from('nexo_admin_challenges').delete().eq('id',decodeURIComponent(challengeMatch[1]))}catch{}
+          }
+
           const logoutResp=await fetch('http://127.0.0.1:'+port+'/api/admin-logout',{
             method:'POST',
             headers:{'Content-Type':'application/json',Cookie:cookie},
@@ -216,7 +229,7 @@ app.listen(port,'0.0.0.0',()=>{
           if(delResp.status!==200||deleted.ok!==true) throw new Error('Eliminación administrativa inválida.');
           rid='';coverPath='';
 
-          console.log('NEXO deep self-check: OK (form, storage, admin-actions, history, PDF, delete, email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
+          console.log('NEXO deep self-check: OK (form, storage, admin-actions, history, PDF, passkey-options, logout, delete, email='+(row.submission_notified_at?'sent':row.submission_email_error?'pending':'unknown')+')');
         }catch(error){
           console.error('NEXO deep self-check: FAILED',error);
         }finally{
