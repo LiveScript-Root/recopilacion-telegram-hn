@@ -36,7 +36,7 @@ if (!announce.includes('/api/submissions') || !announce.includes('uploadToSigned
 
 const payment=fs.readFileSync('nexo-production/pago/index.html','utf8');
 if (!payment.includes('/api/paypal-create-order') || !payment.includes('/api/paypal-capture-order')) throw new Error('Pago no usa Orders API.');
-if (payment.includes('WCC2TYW6EW2R2')) throw new Error('El checkout de producción no debe usar Hosted Button directo.');
+if (!payment.includes('id="paypal-direct"') || !payment.includes('WCC2TYW6EW2R2')) throw new Error('Falta el enlace directo de respaldo de PayPal.');
 
 const received=fs.readFileSync('nexo-production/solicitud-recibida/index.html','utf8');
 if (!received.includes('/api/submission-status')) throw new Error('La página de retorno no verifica estado server-side.');
