@@ -1,4 +1,4 @@
-import { json, method, clean, supabaseAdmin, BUCKET } from './_lib.js';
+import { json, method, clean, supabaseAdmin, BUCKET, loadCoverBuffer, archiveSubmissionToGithub } from './_lib.js';
 export default async function handler(req,res){
   if(!method(req,res,['POST'])) return;
   try{
@@ -11,8 +11,29 @@ export default async function handler(req,res){
     const file=row.cover_path.split('/').slice(1).join('/');
     const {data:list,error:listError}=await db.storage.from(BUCKET).list(folder,{search:file,limit:10});
     if(listError||!Array.isArray(list)||!list.some(x=>x.name===file)) return json(res,400,{error:'La portada todavía no terminó de cargarse.'});
-    const {error:updateError}=await db.from('nexo_submissions').update({cover_uploaded:true,updated_at:new Date().toISOString()}).eq('request_id',requestId);
+    const {data:updated,error:updateError}=await db.from('nexo_submissions')
+      .update({cover_uploaded:true,updated_at:new Date().toISOString()})
+      .eq('request_id',requestId)
+      .select('*')
+      .single();
     if(updateError) throw updateError;
+
+    try{
+      const cover=await loadCoverBuffer(db,updated);
+      await archiveSubmissionToGithub(updated,cover,'submitted');
+      await db.from('nexo_submissions').update({
+        github_archive_last_at:new Date().toISOString(),
+        github_archive_error:null,
+        updated_at:new Date().toISOString()
+      }).eq('request_id',requestId);
+    }catch(archiveError){
+      console.error('GitHub archive:',archiveError);
+      await db.from('nexo_submissions').update({
+        github_archive_error:String(archiveError.message||archiveError).slice(0,1000),
+        updated_at:new Date().toISOString()
+      }).eq('request_id',requestId);
+    }
+
     return json(res,200,{ok:true});
   }catch(e){console.error(e);return json(res,500,{error:'No se pudo confirmar la portada.'});}
 }
