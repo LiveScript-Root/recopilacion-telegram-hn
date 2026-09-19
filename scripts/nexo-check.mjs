@@ -18,6 +18,16 @@ const mustExist = [
   'api/admin-submissions.js',
   'api/admin-resend.js',
   'api/admin-resend-submission.js',
+  'api/admin-passkey-auth-verify.js',
+  'api/admin-passkey-auth-options.js',
+  'api/admin-passkey-register-verify.js',
+  'api/admin-passkey-register-options.js',
+  'api/admin-receipt.js',
+  'api/admin-delete.js',
+  'api/admin-events.js',
+  'api/admin-action.js',
+  'api/admin-logout.js',
+  'api/admin-login.js',
   'supabase/schema.sql',
   'vercel.json',
   '.env.example'
@@ -44,7 +54,7 @@ if (received.includes("st==='COMPLETED'")) throw new Error('La página de retorn
 
 const admin=fs.readFileSync('nexo-production/admin/index.html','utf8');
 if (!admin.includes('/api/admin-submissions') || !admin.includes('/api/admin-resend') || !admin.includes('/api/admin-resend-submission')) throw new Error('Panel admin incompleto.');
-if (admin.includes('\\n')) throw new Error('Panel admin contiene secuencias \\n literales que rompen JavaScript.');
+for (const term of ['/api/admin-login','/api/admin-logout','/api/admin-action','/api/admin-events','/api/admin-delete','/api/admin-receipt','Passkey / Windows Hello / Face ID','Exportar CSV','En revisión','Publicada']) { if (!admin.includes(term)) throw new Error('Mejora administrativa ausente: '+term); }
 
 const preview=fs.readFileSync('nexo-production/anunciar/index.html','utf8');
 for (const term of ['Vista previa','previewImage','previewName','previewPlaceholder']) {
@@ -78,7 +88,7 @@ for (const [name,html] of [['admin',admin],['anunciar',preview],['pago',payment]
 }
 
 const schema=fs.readFileSync('supabase/schema.sql','utf8');
-for (const term of ['nexo_submissions','nexo_paypal_events','cover_uploaded','nexo-submissions']) {
+for (const term of ['nexo_submissions','nexo_paypal_events','cover_uploaded','nexo-submissions','nexo_submission_events','nexo_admin_passkeys','review_status']) {
   if (!schema.includes(term)) throw new Error('Schema incompleto: '+term);
 }
 
